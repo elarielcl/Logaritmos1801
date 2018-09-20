@@ -1,0 +1,184 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts,setspace}
+\usepackage{bbm}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+
+%Teoremas, Lemas, etc.
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lem}{Lema}
+\newtheorem{prop}{Proposici\'on}
+\newtheorem{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem{defi}{Definici\'on}
+\newtheorem{obs}{Observaci\'on}
+\newtheorem{ej}{Ejemplo}
+\newtheorem{ejer}{Ejercicio}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Auxiliar 12 - ``Algoritmos Aproximados , Probabilistas y Online"}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Gonzalo Navarro}
+\assistant{\textst{Manuel} Ariel Cáceres Reyes}
+
+
+\begin{document}
+\maketitle
+\begin{center}
+13 de Agosto del 2018
+\end{center}
+\vspace{-1ex}
+
+%%ORDENAR PUNTOS EN EL PLANO CON DISTRIBUCION UNIFORME
+%%ORDENAR VALORES EN [0, n^k - 1]
+%%ORDENAR SEGUN DISTANCIA AL CENTRO, PUNTOS DEL CIRCULO UNITARIO
+%%vEM (?)
+%%RANK EN TIEMPO CTE Y ESPACIO o(n)
+%%EXPRESIONES REGULARES EN AUTOMATAS! (COMODIN)
+%%KNUTH MORRIS PRATT
+%%OPERACIONES EN SUFFIX TREES!
+
+\begin{problems}
+%Bienvenida
+\problem {\large\underline{\textbf{Aproximación Probabilista de Cubrimiento por vértices}}}\\
+Recuerde el problema de recubrir los vértices de un grafo $G = (V, E)$ cuando hay pesos $c : V \to R^+$ asociados a cada nodo. Se desea encontrar un $V' \subseteq V$ tal que toda arista de $E$ tenga al menos una de sus dos extremos en $V'$ , y minimizar $C = \sum_{v\in V'}c(v)$.\\
+Considere ahora el siguiente algoritmo aleatorizado:
+\paragraph{Algoritmo:} Partir de un $V' = \emptyset$. Ir tomando las aristas $e \in E$ en algún orden. Para cada $e =\{u, v\}$, con probabilidad $\frac{c(v)}{c(u)+c(v)}$ incluir $u$ en $V'$, sino incluir $v$ en $V'$. Luego eliminar todas las otras aristas incidentes en el nodo incluido, y continuar eligiendo otro e hasta vaciar $E$.\\
+Demuestre que el algoritmo aleatorizado obtiene, en el caso esperado, una $2$-aproximación. Analice antes el caso particular donde los pesos de los vértices son todos iguales.
+
+\problem {\large\underline{\textbf{Quicksort Aleatorizado}}}\\
+Muestre que el número esperado de comparaciones realizadas por \textit{Quicksort eligiendo pivote al azar} es $\mathcal{O}(n\log{n})$, puede suponer que lo elementos a ordenar son todos distintos. Muestre la propiedad utilizando cada uno de los siguientes métodos:
+\begin{enumerate}[a)]
+    \item Usando variable aleatoria que indica si dos elementos fueron comparados.
+    \item Usando la propiedad de \textit{esperanzas totales}.
+\end{enumerate}
+\problem {\large\underline{\textbf{Tareas y Procesadores}}}\\
+Tenemos $m$ procesadores idénticos. Como entrada recibimos una lista $t_{1}, t_{2}, \ldots, t_{n}$ de tareas con tiempos de procesamiento $p_{1}, p_{2}, \ldots, p_{n} > 0$, respectivamente. Las tareas son recibidas secuencialmente, y sólo cuando una tarea llega conocemos su tiempo de procesamiento. Cada tarea debe ser asignada a una máquina inmediatamente, y la decisión no puede ser cambiada. La \textit{carga} de un procesador es la suma de los tiempos de procesamiento de todas las tareas que le son asignadas. El costo de un algoritmo que resuelve el problema de asignación es la máxima carga entre sus procesadores.\\
+Considere el siguiente algoritmo para el problema anterior. Cada tarea es asignada al procesador con menor carga (en caso de empate, se elige cualquiera).
+\begin{enumerate}[a)]
+    \item Demuestre que este algoritmo es $\left(2-\frac{1}{m}\right)-$competitivo.
+    \item Demuestre que esta cota es óptima para el algoritmo.
+\end{enumerate}
+%\problem {\large\underline{\textbf{Variación del problema de la mochila}}}\\
+%Considere una versión modificada del problema de la mochila, en la que se tienen $n$ elementos cuyos pesos son números reales que suman $m$, y se dispone de $m$ mochilas que pueden soportar peso hasta $1.0$. Se desea maximizar el número total de elementos que se introducen en las mochilas, sin sobrepasar la capacidad de ninguna. Diseñe una $2$-aproximación para este problema. \\
+%\textbf{Hint:} Puede reducir este problema a otra aproximación conocida.
+
+\end{problems}
+\newpage
+\begin{problems}
+\problem {\large\underline{\textbf{Aproximación Probabilista de Cubrimiento por vértices}}}\\
+En el caso que los pesos de los vértices sean todos iguales, al tomar una arista $e = \{u,v\}$ se elegirá cada extremo con probabilidad $\frac{1}{2}$. Supongamos ahora que $V^*$ es un cubrimiento de tamaño mínimo y que $V_{i}$ es el conjunto de vértices que lleva nuestro algoritmo luego de $i$ iteraciones. Demostraremos por inducción que se cumple que $\mathbb{E}(|V^* \cap V_{i}|) \ge \mathbb{E}(|V_{i}\setminus V^*|)$.\\
+
+Cuando $i=0$ ambas esperanzas son $0$, por lo que la desigualdad se cumple. Supongamos ahora que $\mathbb{E}(|V^* \cap V_{i}|) \ge \mathbb{E}(|V_{i}\setminus V^*|)$, si la arista considerada en la iteración $i+1$ es $e = \{u,v\}$ sabemos que al menos uno $u$ o $v$ es parte de $V^*$ (sino no sería cubrimiento), por lo tanto, la probabilidad de que $|V^* \cap V_{i}|$ aumente en $1$ es de al menos $1/2$ y la probabilidad de que $|V_{i} \setminus V^*|$ aumente en $1$ es de a lo mas $1/2$, por lo que la desigualdad se mantiene. Más formalmente llamemos $v_{i+1}$ al vértice escogido por el algoritmo en la iteración $i+1$, entonces:
+\begin{align*}
+    \mathbb{E}(|V^* \cap V_{i+1}|) &= \mathbb{E}(|V^* \cap V_{i+1}|; v_{i+1} \in V^*)\cdot \mathbb{P}(v_{i+1}\in V^*) + \mathbb{E}(|V^* \cap V_{i+1}|; v_{i+1} \not\in V^*)\cdot \mathbb{P}(v_{i+1}\not\in V^*)\\
+    &= \mathbb{E}(|V^* \cap V_{i}|+1)\cdot \mathbb{P}(v_{i+1}\in V^*) + \mathbb{E}(|V^* \cap V_{i}|)\cdot \mathbb{P}(v_{i+1}\not\in V^*)\\
+    & \ge \mathbb{E}(|V_{i} \setminus V^*|+1)\cdot \mathbb{P}(v_{i+1}\in V^*) + \mathbb{E}(|V_{i} \setminus V^*|)\cdot \mathbb{P}(v_{i+1}\not\in V^*)\\
+    & \ge \mathbb{E}(|V_{i} \setminus V^*|)\cdot \mathbb{P}(v_{i+1}\in V^*) + \mathbb{E}(|V_{i} \setminus V^*|+1)\cdot \mathbb{P}(v_{i+1}\not\in V^*)\\
+    &= \mathbb{E}(|V_{i+1} \setminus V^*|; v_{i+1} \in V^*)\cdot \mathbb{P}(v_{i+1}\in V^*) + \mathbb{E}(|V_{i+1} \setminus V^*|; v_{i+1} \not\in V^*)\cdot \mathbb{P}(v_{i+1}\not\in V^*)\\
+    &= \mathbb{E}(|V_{i+1} \setminus V^*|)
+\end{align*}
+
+Llamemos $V'$ al cubrimiento entregado por nuestro algoritmo, entonces $\mathbb{E}(|V'|) = \mathbb{E}(|V' \cap V^*|) + \mathbb{E}(|V' \setminus V^*|) \le 2 \mathbb{E}(|V' \cap V^*|) \le \mathbb{E}(|V^*|) = 2|V^*|$.
+
+Volviendo al problema con pesos mostraremos que:
+\begin{align*}
+    \mathbb{E}\left( \sum_{v\in V_{i}\cap V^*} w_{v}\right) \ge \mathbb{E}\left( \sum_{v\in V_{i}\setminus V^*} w_{v}\right)
+\end{align*}
+Con $i=0$ ambas esperanzas son $0$, cumpliéndose la desigualdad. Asumiendo la desigualdad para $i$, tenemos:
+\begin{align*}
+    \mathbb{E}\left( \sum_{v\in V_{i+1}\cap V^*} w_{v}\right) &= \mathbb{E}\left( \sum_{v\in V_{i}\cap V^*} w_{v}\right) + \mathbb{E}\left(\mathbbm{1}_{v_{i+1}\in V^*}w_{v_{i+1}}\right) \\
+    & \ge \mathbb{E}\left( \sum_{v\in V_{i}\setminus V^*} w_{v}\right) + w_{v}\mathbb{P}\left(v\in V^*\right)\mathbb{P}\left(v_{i+1} = v\right) + w_{u}\mathbb{P}\left(u\in V^*\right)\mathbb{P}\left(v_{i+1} = u\right)\\
+    &= \mathbb{E}\left( \sum_{v\in V_{i}\setminus V^*} w_{v}\right) + \frac{w_{u}w_{v}}{w_{u}+w_{v}} (\mathbb{P}\left(v\in V^*\right)+\mathbb{P}\left(u\in V^*\right))\\
+    & \ge \mathbb{E}\left( \sum_{v\in V_{i}\setminus V^*} w_{v}\right) + \frac{w_{u}w_{v}}{w_{u}+w_{v}} (\mathbb{P}\left(v\not\in V^*\right)+\mathbb{P}\left(u\not\in V^*\right))\\
+     & = \mathbb{E}\left( \sum_{v\in V_{i}\setminus V^*} w_{v}\right) + w_{v}\mathbb{P}\left(v\not\in V^*\right)\mathbb{P}\left(v_{i+1} = v\right) + w_{u}\mathbb{P}\left(u\not\in V^*\right)\mathbb{P}\left(v_{i+1} = u\right)\\
+     &= \mathbb{E}\left( \sum_{v\in V_{i}\setminus V^*} w_{v}\right) + \mathbb{E}\left(\mathbbm{1}_{v_{i+1}\not\in V^*}w_{v_{i+1}}\right) \\
+     &= \mathbb{E}\left( \sum_{v\in V_{i+1}\setminus V^*} w_{v}\right)
+\end{align*}
+Finalmente, $\mathbb{E}\left( \sum_{v\in V'} w_{v}\right) = \mathbb{E}\left( \sum_{v\in V'\cup V^*} w_{v}\right) + \mathbb{E}\left( \sum_{v\in V'\setminus V^*} w_{v}\right) \le 2 \mathbb{E}\left(\sum_{v\in V'\cup V^*} w_{v}\right) \le 2 \mathbb{E}\left(\sum_{v\in V^*} w_{v}\right) = 2\sum_{v\in V^*} w_{v}$
+
+\problem {\large\underline{\textbf{Quicksort Aleatorizado}}}\\
+\begin{enumerate}[a)]
+    \item Definamos la variable aleatoria $X_{ij}$ que indicatriz que vale $1$ si el $i$-ésimo elemento más pequeño es comparado con el $j$-ésimo por el algoritmo, y $0$ en caso contrario, estamos interesados por tanto en $\mathbb{E}\left(\sum_{i=1}^{n}\sum_{j=i+1}^{n}X_{ij}\right)$, el número esperado de comparaciones. Por lo tanto:
+    \begin{align*}
+    \mathbb{E}\left(\sum_{i=1}^{n}\sum_{j=i+1}^{n}X_{ij}\right) &= \sum_{i=1}^{n}\sum_{j=i+1}^{n}\mathbb{E}(X_{ij})\\
+    &= \sum_{i=1}^{n}\sum_{j=i+1}^{n} \mathbb{P}(\text{$i$-ésimo se compara con el $j$-ésimo})
+    \end{align*}
+    La probabilidad de que suceda este evento es la misma probabilidad de que alguno de los elementos (el $j$-ésimo o el $i$-ésimo) sea escogido antes que cualquier elemento entre ellos que es $\le 2/(j-i+1)$(pues entre el $i$-ésimo y el $j$-ésimo todos tienen la misma probabilidad de haber sido escogidos antes). Por lo tanto:
+    \begin{align*}
+        &= \sum_{i=1}^{n-1}\sum_{j=i+1}^{n} \mathbb{P}(\text{$i$-ésimo se compara con el $j$-ésimo}) \\
+        &\le \sum_{i=1}^{n-1}\sum_{j=i+1}^{n} \frac{2}{j-i+1}\\
+        &\le 2\sum_{i=1}^{n}\sum_{k=1}^{n}\frac{1}{k}\\
+        &= 2n H_{n} \le 2n\ln{n}
+    \end{align*}
+    \item Si estamos ordenando $n$ elementos y escogemos un pivote al azar, el particionar nos cuesta exactamente $n-1$ comparaciones. Luego como el pivote es escogido al azar este puede ser el $i$-ésimo con probabilidad $1/n$ y si $T(n)$ es el tiempo esperado para un input de tamaño $n$, entonces el costo que queda en este caso es $T(n-i-1) + T(i)$. Aplicando esperanzas totales tenemos que:
+    \begin{align*}
+        T(n) &= n-1 + \frac{1}{n}\sum_{i=0}^{n-1}(T(n-i-1) + T(i))\\
+        &= n-1 + \frac{2}{n}\sum_{i=0}^{n-1}T(i)
+    \end{align*}
+    Con esto mostremos por inducción que $T(n) \le 2n\ln{n}$.\\
+    \begin{align*}
+        T(n) &= n-1 + \frac{2}{n}\sum_{i=0}^{n-1}T(i) \\
+        &\le n-1 + \frac{2}{n}\sum_{i=0}^{n-1}2i\ln{i}\\
+        &\le n-1 + \frac{2}{n}\int_{1}^{n}(2x\ln{x})dx\\
+        &= n-1 + \frac{2}{n} (x^2\ln{x} - \frac{x^2}{2})\Big|_1^n\\
+        &= n-1 + 2n\ln{n} - n + \frac{1}{n}\\
+        &\le 2n\ln{n}
+    \end{align*}
+\end{enumerate}
+\problem {\large\underline{\textbf{Tareas y Procesadores}}}\\
+\begin{enumerate}[a)]
+    \item Enumeremos las tareas en orden creciente de carga (luego de correr ALG), si lo hacemos, el costo de ALG queda expresado como la carga del último de estos procesadores, el $m$.\\
+    Consideremos ahora la asignación de la última tarea del procesador $m$. Por como funciona el algoritmo, cuando se le fue asignada esta tarea, el procesador $m$ tenía la menor carga entre los procesadores. Por lo tanto, el período de ocio de cada uno de los $m-1$ procesadores anteriores no puede ser mayor que la duración de esta última tarea (sino este procesador no hubiese sido escogido como el de carga menor). De este modo, estos períodos de ocio no pueden exceder la duración de la tarea más larga, $max\ p_{i}$. Con esto se tiene que:
+    \begin{align*}
+        m\cdot ALG &\le \sum_{i=1}^n p_{i} + (m-1)max\ p_{i}\\
+        &\le \frac{1}{m} \sum_{i=1}^n p_{i} + \left(1-\frac{1}{m}\right)max\ p_{i}
+    \end{align*}
+    Finalmente, el óptimo no puede ser menor a la carga promedio (pues este es el óptimo del problema relajado), ni a la máxima duración entre las tareas (pues algún procesador debe procesarle).
+    \begin{align*}
+        & \le OPT + \left(1-\frac{1}{m}\right)OPT\\
+        & = \left(2-\frac{1}{m}\right)OPT        
+    \end{align*}
+    \item Que la cota sea óptima quiere decir que el ALG no consigue un radio competitivo menor a $\left(2-\frac{1}{m}\right)$. Esto lo podemos hacer mostrando que hay un input para el cual se ALG alcanza exactamente $\left(2-\frac{1}{m}\right)OPT$.\\
+    
+    Consideremos $m(m-1)$ tareas de tiempo $1$ y luego una tarea de tiempo $m$. En este caso ALG distribuirá equitativamente las primeras tareas dando carga $(m-1)$ a cada procesador y luego la última tarea se la dará a alguno de los procesadores quien quedará con carga $2m-1$ obteniendo este costo. Sin embargo, el OPT distribuye de manera equitativa estas tareas dándole carga $m$ a cada uno de los procesadores.\\
+    
+    De esta forma $ALG = 2m-1 = \left(2-\frac{1}{m}\right)m = \left(2-\frac{1}{m}\right)OPT$.
+\end{enumerate}
+%\problem {\large\underline{\textbf{Variación del problema de la mochila}}}\\
+%Usaremos para este problema la $2$-aproximación para \textit{bin-packing}, en este caso, las mochilas serán los contenedores o bin, por lo tanto la dos aproximación que conocemos para \textit{bin-packing} utilizará a lo más $2m$ mochilas para contener los $n$ items. Luego tomamos las $m$ mochilas que tengan más peso que cumplirán que el peso total contenido es al menos $m/2$ (pues en total las $2m$ contienen $m$ peso y se toma la mitad de mayor peso), con lo que tenemos una $2$-aproximación para nuestro problema.
+\end{problems}
+\end{document}
+
+ 

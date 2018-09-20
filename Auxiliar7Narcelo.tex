@@ -1,0 +1,151 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts,setspace}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+\renewcommand{\figurename}{Figura}
+%Teoremas, Lemas, etc.
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lem}{Lema}
+\newtheorem{prop}{Proposici\'on}
+\newtheorem{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem{defi}{Definici\'on}
+\newtheorem{obs}{Observaci\'on}
+\newtheorem{ej}{Ejemplo}
+\newtheorem{ejer}{Ejercicio}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Auxiliar 7 - ``Búsqueda en Texto, Algoritmo basado en Autómata"}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Pablo Barceló}
+\professor{Gonzalo Navarro}
+\assistant{\textst{Manuel} Ariel Cáceres Reyes}
+
+
+\begin{document}
+\maketitle
+\begin{center}
+7 de Mayo del 2018
+\end{center}
+
+
+\vspace{-1ex}
+
+\cfoot{``I visualize a time when we will be to robots what dogs are to humans, and I’m rooting for the machines.''\\ Claude Shannon}
+
+\begin{problems}
+\problem {\large\underline{\textbf{Búsqueda en Texto}}}\\
+El problema de \textit{Búsqueda en Texto} consiste en, dadas dos cadenas $T$ (texto) y $P$ (patrón) con caracteres en un alfabeto $\Sigma$, encontrar todas las ocurrencias de $P$ en $T$ (esto es, las subcadenas de $T$ iguales a $P$). \\ Parametrizaremos los costos de las soluciones por los tamaños de $T$, $P$ y $\Sigma$ que serán $n$, $m$ y $\sigma$ respectivamente.
+\begin{enumerate}[a)]
+    \item Muestre una solución que funcione en tiempo $\mathcal{O}(nm)$
+    \item Muestre que existe un autómata finito determinista que sea capaz de reconocer $(\Sigma)*P$
+    \item ¿Cómo se podría usar este autómata para resolver el problema de \textit{Búsqueda en Texto}?
+    \item Muestre como construir este autómata de forma eficiente.
+    \item Muestre un algoritmo de tiempo $\mathcal{O}(n+m)$ (puede considerar que $\sigma \in \mathcal{O}(1)$).
+    \item Muestre un algoritmos de tiempo $\mathcal{O}(n+m)$ incluso cuando $\sigma \in \omega(1)$.
+
+\end{enumerate}
+\end{problems}
+\newpage
+\begin{center}
+{\huge \underline{Soluciones}}
+\end{center}
+\begin{problems}
+\problem{\large\underline{\textbf{Búsqueda en Texto}}}\\
+\begin{enumerate}[a)]
+    \item El algoritmo por fuerza bruta\\
+    \begin{algorithm}[H]
+        \SetAlgoLined
+        \For{$i=0\ldots n-m$} {
+            $j\gets 1$
+            \For{$j=1\ldots m$} {
+                \If{$P[j] != T[i+j]$}{
+                    $break$
+                }
+            }
+            \If{$j==m$} {
+                $report(i+1)$
+            }
+        }
+    \end{algorithm}
+    multiplicando el costo de los ifs obtenemos un costo $\mathcal{O}(nm)$.
+    \item El autómata es el siguiente:
+    \begin{itemize}
+    \item Conjunto de estados $Q=\{0, 1, \ldots, m\}$ siendo $0$ el estado inicial y $m$ el final.
+    \item Función de transición 
+    \begin{eqnarray*}
+    \delta: \Sigma \times Q \to & Q & \\
+    (q, a) \mapsto &\delta(q, a) &= \sigma(P[1:q]a) \\
+    &  &= \text{largo del sufijo más largo de $P[1:q]a$ que es prefijo de $P$}
+    \end{eqnarray*}
+    \end{itemize}
+\begin{figure}[h]\footnotesize
+  \begin{center}
+      \includegraphics[scale=0.28]{imagenes/automata.png}
+  \caption{Autómata correspondiente al patrón $P=ababaca$.}
+  \end{center}
+\end{figure}
+Veamos ahora lo siguiente:
+\begin{quote}
+    Si el sufijo más largo de lo que se ha
+    leído que es prefijo del patrón es $P[1:i]$, entonces el autómata se encuentra en el estado $i$
+\end{quote}
+(esto pues justo antes de leer el último carácter $P[i]$ se estaba en el estado $j\ge i-1$, por lo que se aplicó $\sigma(P[1:j]P[i]) = \sigma(P[1:i])$ (esto último por ser $P[1:i]$ maximal) $= i$).\\
+Con esto es simple ver que cada vez que nuestro prefijo maximal leído sea $P$ el autómata se encontrará en el estado $m$, reconociendo así $(\Sigma)*P$
+    \item Podemos correr el autómata anterior sobre $T$ y reportar una ocurrencia cada vez que pasamos por el estado final.
+    \item
+    Construir el autómata se reduce a construir su función de transición. El algoritmo más simple consiste en hacerlo para cada par $(q, a)\in Q \times \Sigma$ y para cada uno de ellos revisar si $P[1:k]$ es sufijo de $P[1:q]a$ , con $k$ desde $\min(q+1, m)$ hasta $0$ incurriendo en un costo total de $\mathcal{O}(|\Sigma|m^3) = \mathcal{O}(m^3)$.\\
+    
+    Consideremos ahora la siguiente observación:\\
+    
+    Al calcular $\delta(q,a) = \sigma(P[1:q]a)$
+    \begin{itemize}
+        \item Si $P[q+1] = a$, entonces $\delta(q,a) = q+1$.
+        \item Si no ($P[q+1] \not= a$), entonces $\delta(q,a) = \sigma(P[1:q]a) = \sigma(P[2:q]a) \le q$, y por lo tanto, puede ser calculado corriendo el autómata parcialmente construído sobre $P[2:q]a$.
+    \end{itemize}
+    Considerando esto podemos construir el autómata en $\mathcal{O}(|\Sigma|m^2) = \mathcal{O}(m^2)$.\\
+    
+    
+    Finalmente, en el caso $P[q+1] \not= a$ no es necesario correr el autómata sobre $P[2:q]a$. Esto se puede lograr manteniendo una variable $X$ que sea el resultado de correr el autómata sobre $P[2:q]$, es decir, $X = \delta(\ldots\delta(\delta(0, P[2]), P[3])\ldots , P[q])$. Con esto, $\delta(q, a) = \delta(X, a)$, cuando $P[q+1] \not= a$. Obteniendo un tiempo de $\mathcal{O}(|\Sigma|m) = \mathcal{O}(m)$.
+    \item Construimos el autómata de $P$ en $\mathcal{O}(m)$ y luego lo corremos en tiempo $\mathcal{O}(n)$.
+    \item La solución anterior es en realidad $\mathcal{O}(n + \sigma m)$, y en caso que $\sigma \in \omega(1)$, no es $\mathcal{O}(n+m)$ . Esta complejidad se logra con el algoritmo de Morris-Pratt. Este algoritmo define la función $f(i)$ como el largo del prefijo propio más largo de $P[1:i]$ que también es sufijo propio.\\
+    
+    Con esto el algoritmo mantiene un contador $j$ que avanza con el texto y un contador $i$ que avanza con el patrón mientras los caracteres calcen. En caso de no haber calce, $i$ se actualiza a $f(i)$ repitiendo esto hasta que se encuentre un calce o $i=0$.\\
+    
+    Se puede mostrar que el algoritmo anteriormente descrito es correcto y que $f(i)$ se puede construir en $\mathcal{O}(m)$ (de un modo similar a la construcción del autómata y con un análisis amortizado parecido al que haremos a continuación).\\
+    
+    Veamos ahora que el algoritmo (teniendo $f$ precomputada) es $\mathcal{O}(n)$. Un análisis de peor caso nos lleva a pensar que por cada $j$, podríamos aplicar la función $f$ $\mathcal{O}(m)$ veces hasta encontrar un calce, por lo que la complejidad es $\mathcal{O}(nm)$, sin embargo, para poder aplicar la función $f$ un número $k$ de veces, antes debimos haber aumentado $i$ $k$ veces, finalmente, como $i$ no puede haber aumentado mas de $n$ veces, el número de veces que se aplica $f$ en total es $n$.
+\end{enumerate}
+\end{problems}
+\end{document}

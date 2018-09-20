@@ -1,0 +1,149 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts,setspace}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+
+%Teoremas, Lemas, etc.
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lem}{Lema}
+\newtheorem{prop}{Proposici\'on}
+\newtheorem{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem{defi}{Definici\'on}
+\newtheorem{obs}{Observaci\'on}
+\newtheorem{ej}{Ejemplo}
+\newtheorem{ejer}{Ejercicio}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Auxiliar 1 - ``Cotas inferiores: Adversario"}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Pablo Barceló}
+\professor{Gonzalo Navarro}
+\assistant{\textst{Manuel} Ariel Cáceres Reyes}
+
+
+\begin{document}
+\maketitle
+\begin{center}
+19 de marzo del 2018
+\end{center}
+
+
+\vspace{-1ex}
+
+\cfoot{``Sometimes, someone you thought was your adversary is your ally.''\\ Erica Durance}
+
+\begin{problems}
+
+\problem {\Large\underline{\textbf{Mediana}}}\\
+Considere el problema de encontrar la \textit{mediana} de un arreglo de $n$ elementos distintos (con $n$ impar).
+\begin{enumerate}[a)]
+    \item Muestre que se necesitan $n$ accesos al arreglo para responder la mediana
+    \item Muestre que se necesitan al menos $n-1$ comparaciones entre elementos
+    \item Muestre que se necesitan al menos $\sim \frac{3n}{2}$ comparaciones entre elementos
+\end{enumerate}
+
+\problem {\Large\underline{\textbf{Grado 3}}}\\
+Muestre que determinar si un grafo no dirigido posee o no un vértice de grado $3$ toma, en el peor caso, $\binom{n}{2}-n$ consultas del tipo ``¿existe un arco entre
+los vértices $u$ y $v$?'', si la cantidad total de vértices es $n$.
+
+
+\problem {\Large\underline{\textbf{Mezclar 2 listas ordenadas}}}
+
+Considere el problema de mezclar 2 listas ordenadas de igual tamaño, $X[1,\ldots n], Y[1,\ldots n]$ de modo que el resultado final este también ordenado. En este problema estaremos interesados en las preguntas del estilo: ¿$X[i]<Y[j]$?
+\begin{enumerate}[a)]
+    \item Muestre que el problema es $\mathcal{O}(2n-1)$
+    \item Muestre que el problema no puede ser resuelto en menos de $2n-1$ comparaciones
+\end{enumerate}
+
+\end{problems}
+
+\newpage
+\begin{problems}
+\problem {\Large\underline{\textbf{Mediana}}}\\
+\begin{enumerate}[a)]
+    \item Por contradicción, si un algoritmo encuentra la mediana en menos de $n$ accesos significa que no acceso alguno de los elementos del arreglo. El adversario puede en este caso elegir el valor de este elemento no accesado a su elección de modo que la elección de mediana del algoritmo sea incorrecta.
+    
+    \item Consideremos el grafo $G$ cuyos vértices representan a los elementos del arreglo y las aristas representan las comparaciones realizadas por el algoritmo. Si un algoritmo hace menos de $n-1$ comparaciones significa que $G$ no es conexo. Sea $m$ el vértice que representa la mediana escogida por el algoritmo, el cual se encuentra en una de las componentes conexas de $G$. El adversario puede entonces, tomar otra componente conexa y hacer que todos esos elementos sean menores o mayores a $m$ que en alguno de los dos casos hace que $m$ sea una respuesta a mediana incorrecta.
+    
+    \item Consideremos ahora un grafo dirigido $D$, cuyos vértices son los elementos del arreglo y existe una arista $u \to v$ si se le respondió al algoritmo que el elemento $u$ era mayor que el $v$. Sea $m$ el vértice que representa a la mediana, al finalizar las consultas se debe cumplir que en $D$ todos los vértices tienen un camino dirigido hacia $m$ o desde $m$ (si existe un elemento que no cumpla esta condición el adversario puede establecer su valor arbitrariamente mayor o menor al de $m$ y hacer que $m$ sea una respuesta de mediana incorrecta). Nombremos comparaciones cruciales a todas aquellas que se encuentran en un camino desde o hacia $m$. Por la condición anterior sabemos que existen al menos $n-1$ comparaciones cruciales.\\
+    
+    Notemos que el resto de comparaciones (no cruciales) se hace entre elementos mayores a $m$ y elementos menores a $m$. A continuación mostraremos un adversario que genera $\sim \frac{n}{2}$ comparaciones no cruciales, con lo que habremos terminado la demostración.\\
+    
+    El adversario mantiene $3$ conjuntos; $A$ el de los elementos que nunca han sido comparados, $B$ el de los elementos menores a la mediana y $C$ el de los elementos mayores a la mediana. Inicialmente comienza con todos los elementos en $A$, siendo $B$ y $C$ vacíos.
+    \begin{itemize}
+        \item Si se realiza una comparación entre dos elementos de $A$ se escoge uno mayor que la mediana (y se pone en $C$) y el otro menor (y se pone en $B$).
+        \item Si se realiza una comparación entre dos elementos de $B$ o entre dos elementos de $C$, se elige una manera de responder consistente con las respuestas ya dadas.
+        \item Si se realiza una comparación entre un elemento de $A$ y uno de $B$ o uno de $C$, se responde de manera que la comparación sea no crucial.
+        \item Las otras comparaciones se responden de acuerdo al nombre de los conjuntos.
+    \end{itemize}
+
+\end{enumerate}
+
+Para finalizar hay que notar que para que el algoritmo haya comparado todos los elementos se necesitan al menos $\frac{n-1}{2}$ comparaciones no cruciales.
+
+\problem {\Large\underline{\textbf{Grado 3}}}\\
+
+En este caso nuestro adversario mantendrá un grafo $G$ que contiene las aristas que aún no han sido preguntadas por el algoritmo.\\
+
+Inicialmente el adversario tiene un grafo completo $G = V^2$. Cada vez que el algoritmo le pregunta por la existencia de una arista $\{u,v\}$ el adversario setea $G\gets G - \{u,v\}$, en caso que $G$ no tenga un vértice de grado al menos $3$ el adversario responde que la arista consultada es parte del grafo; en cambio, si $G$ tiene un vértice de grado al menos $3$ el adversario responde que la arista consultada NO es parte del grafo.\\
+
+Veamos primero que el algoritmo necesita que el adversario le responda afirmativamente acerca de la existencia de una arista. Pues si nunca le responde afirmativamente significa que en $G$ existe un vértice que tiene $3$ aristas incidentes, es decir, $3$ aristas que el algoritmo no ha consultado si pertenecen o no al grafo. Por lo tanto existen dos inputs posibles, consistentes con las respuestas del adversario, uno que tiene un vértice de grado $3$ y otro que no lo tiene.\\
+
+Veamos ahora que para que el adversario responda afirmativo a una pregunta se necesitan al menos $\binom{n}{2}-n$ consultas, con lo que finalizaremos esta demostración.\\
+
+En el momento en que el adversario responde por primera vez afirmativamente, todos los vértices de $G$ tienen grado $\le 2$ y por lo tanto $G$ tiene a lo más $n$ aristas. Finalmente, como cada arista que no está en $G$ fue removida por una consulta anterior que se le hizo al adversario y como $G$ comenzó con $\binom{n}{2}$ aristas, el algoritmo hizo al menos $\binom{n}{2}-n$ consultas.
+
+\problem {\Large\underline{\textbf{Mezclar 2 listas ordenadas}}}
+\begin{enumerate}[a)]
+    \item El algoritmo de ``merge'' ocupado en ``MergeSort'' realiza en el peor caso $2n-1$ comparaciones (una por cada elemento que pone en la lista de los ordenados). \flash
+    
+    \item Por $\Rightarrow \Leftarrow$ existe un algoritmo $A$ que realiza $\le 2n-2$  comparaciones.\\
+    
+    El adversario \demon  construye el siguiente input:
+    \begin{itemize}
+        \item $X \rightarrow$ lista cuyos elementos son $x_{i} = 2i-1$
+        \item $Y \rightarrow$ lista cuyos elementos son $y_{i} = 2i$
+    \end{itemize}
+    
+    Si ejecutamos el algoritmo $A$ sobre el input anterior encontraremos un $i^*$ tal que $x_{i^*}$ no fue comparado con ambos $y_{i^*-1}$ e $y_{i^*}$ (si todos los $i$ lo cumplieran se habrían hecho más de $2n-2$ comparaciones).\\
+    Supongamos sin mucha pérdida de generalidad que solo no fue comparado con $y_{i^*}$, entonces en el siguiente input:
+    \begin{itemize}
+        \item $X \rightarrow$ lista cuyos elementos son $x_{i} = 2i-1$, excepto $x_{i^*} = 2i^*$
+        \item $Y \rightarrow$ lista cuyos elementos son $y_{i} = 2i$, excepto $y_{i^*} = 2i^*-1$
+    \end{itemize}
+    El algoritmo recibe exactamente las mismas respuestas a las mismas preguntas que se hizo sobre el input anterior (pues el orden relativo de los elementos no se altera y no se compara $x_{i^*}$ con $y_{i^*}$). Por lo tanto tengo 2 inputs válidos de listas para los cuales $A$ retorna el mismo resultado lo que es una $\Rightarrow \Leftarrow$.
+\end{enumerate}
+\end{problems}
+\end{document}

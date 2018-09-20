@@ -1,0 +1,154 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts,setspace}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+
+%Teoremas, Lemas, etc.
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lem}{Lema}
+\newtheorem{prop}{Proposici\'on}
+\newtheorem{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem{defi}{Definici\'on}
+\newtheorem{obs}{Observaci\'on}
+\newtheorem{ej}{Ejemplo}
+\newtheorem{ejer}{Ejercicio}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Auxiliar 11 - ``Algoritmos Probabilistas"}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Gonzalo Navarro}
+\assistant{\textst{Manuel} Ariel Cáceres Reyes}
+
+
+\begin{document}
+\maketitle
+\begin{center}
+9 de Agosto del 2018
+\end{center}
+\vspace{-1ex}
+
+%%ORDENAR PUNTOS EN EL PLANO CON DISTRIBUCION UNIFORME
+%%ORDENAR VALORES EN [0, n^k - 1]
+%%ORDENAR SEGUN DISTANCIA AL CENTRO, PUNTOS DEL CIRCULO UNITARIO
+%%vEM (?)
+%%RANK EN TIEMPO CTE Y ESPACIO o(n)
+%%EXPRESIONES REGULARES EN AUTOMATAS! (COMODIN)
+%%KNUTH MORRIS PRATT
+%%OPERACIONES EN SUFFIX TREES!
+
+\begin{problems}
+%Bienvenida
+\problem {\large\underline{\textbf{Polinomios}}}\\
+Dados 3 polinomios en una variable $p, q$ de grado $n$ y $r$ de grado $2n$. Muestre un algoritmo probabilístico que tome tiempo $\mathcal{O}(n)$ en determinar si $pq = r$.
+
+\problem {\large\underline{\textbf{Las Vegas vs Monte Carlo}}}
+\begin{enumerate}[a)]
+    \item Muestre que si se tiene un algoritmo de tipo Las Vegas de tiempo esperado $T$ y una constante $c>0$. Se puede construir, para el problema, un algoritmo Monte Carlo de tiempo $cT$ y probabilidad de error a lo más $1/c$.
+    \item ¿Siempre se puede transformar un algoritmo Monte Carlo en un algoritmo de tipo Las Vegas? ¿Que restricción adicional sobre el problema podemos colocar para que sea cierto?
+\end{enumerate}
+
+\problem {\large\underline{\textbf{Corte Mínimo de un Grafo}}}\\
+Un corte o \textit{cut} de un grafo no dirigido conexo $G = (V, E)$, con $|V| = n$ y $|E| = m$, es un subconjunto $E'$ de $E$ tal que el grafo sin estas aristas $(V, E \setminus E')$, tiene dos o más componentes conexas. El corte mínimo del grafo o \textit{min-cut} corresponde al corte del grafo que tiene menor cantidad de aristas. \\
+
+Para resolver este problema utilizaremos el siguiente algoritmo:\\
+
+\begin{algorithm}[H]
+        \SetAlgoLined
+        $(V',E') = (V,E)$\\
+        \For{$i\gets 1\ldots n-2$}{
+            Elegimos una arista $e\in E'$ uniformemente al azar y la contraemos del grafo $(V',E')$ actualizando $V'$ y $E'$.
+        }
+        \Return $E'$
+\end{algorithm}
+\begin{enumerate}[a)]
+\item Muestre que el algoritmo encuentra un \textit{cut} del grafo.
+\item Muestre que la probabilidad que el algoritmo encuentre el \textit{min-cut} es al menos $\frac{2}{n(n-1)}$.
+\item Muestre como reducir la probabilidad de error (no encontrar el \textit{min-cut}) a $\frac{1}{n^2}$.
+\end{enumerate}
+\end{problems}
+\newpage
+\begin{problems}
+\problem
+Elegimos uniformemente $x \in \{0, \ldots, 4n+1\}$ y luego respondemos \texttt{true} si $p(x)\cdot q(x) = r(x)$ y \texttt{false} en otro caso. 
+\begin{itemize}
+    \item En el caso de que la igualdad sea correcta, el algoritmo responde \texttt{true} de manera correcta.
+    \item Sin embargo, cuando la igualdad es falsa ($pq\not =r$) el algoritmo podría responder erróneamente \texttt{true} en caso que $p(x)\cdot q(x) = r(x)$ o equivalentemente cuando el polinomio $g = pq - r$ se hace cero, i.e. cuando $x$ es cero de $g$.\\
+    Veamos que $g$ es de grado a lo más $2n+1$ por lo que tiene a lo más $2n+1$ raíces, y luego la probabilidad que el algoritmo se equivoque es:
+    \begin{align*}
+        \mathbb{P}(x\ es\ raiz\ de\ g) \le \frac{2n+1}{4n+2} = \frac{1}{2}
+    \end{align*}
+\end{itemize}
+\problem 
+Preliminares :
+\begin{itemize}
+    \item \underline{Desigualdad de Markov:} Si $X$ es una variable aleatoria no negativa con valor esperado positivo entonces
+    \begin{align*}
+        \forall c > 0,\ \mathbb{P}(X \ge c \mathbb{E}(X)) \le \frac{1}{c}
+    \end{align*}
+    \item \underline{Algoritmo Montecarlo:} Algoritmo probabilístico que termina en un tiempo determinado, pero tiene una probabilidad de error distinta de $0$.
+    \item \underline{Algoritmo Las Vegas:} Algoritmo probabilístico con probabilidad de error $0$, pero que no asegura el término de su ejecución, solo asegura un valor esperado finito del tiempo que demora.
+\end{itemize}
+\begin{enumerate}[a)]
+\item Si tenemos un algoritmo $A$ ``Las Vegas'' que resuelve el problema en tiempo esperado $T > 0$, creamos el siguiente algoritmo ``Montecarlo'':
+\begin{itemize}
+    \item Correr $A$ por $cT$ tiempo, si ha terminado, respondemos lo mismo que $A$, si no respondemos ``\texttt{null}''.
+\end{itemize}
+Definamos la variable aleatoria $X$ como el tiempo que demora el algoritmo $A$. Por Desigualdad de Markov sabemos que $\mathbb{P}(X\ge cT) \le \frac{1}{c}$, pero $\mathbb{P}(X\ge cT)$ es la probabilidad de que $A$ se demore más de $cT$ y por lo tanto una cota superior a la probabilidad de que nuestro algoritmo ``Montecarlo'' se equivoque.
+\item La condición para hacer la transformación es contar con un procedimiento eficiente que verifique el \texttt{output} dado por el algoritmo ``Montecarlo'' sea correcto, pues si lo tenemos podemos hacer un algoritmo ``Las Vegas'' que corra el ``Montecarlo'' hasta que este último entregue una respuesta correcta.
+\end{enumerate}
+\problem
+\begin{enumerate}[a)]
+\item Supongamos que los nodos en $V'$ (final) son $v'$ y $u'$ y sean $v,u \in E$, nodos que pasaron a ser parte de $v',u'$ en el algoritmo respectivamente. $E'$ (final) es un corte del grafo pues en $(V, E\setminus E')$ no existe un camino de $v\to u$ o dicho de otro modo, todo camino de $v\to u$ pasa por $E'$ (lo cual es cierto pues $v'$ y $u'$ corresponde a una ``partición'' de $V$, y $E'$ corresponde a las aristas entre ambas partes, por lo que todo camino que vaya de una parte a otra debe tomar una de estas aristas).
+\item Supongamos que un \textit{min-cut} es $C$, de $k$ aristas. Observemos lo siguiente:
+\begin{enumerate}[1.]
+    \item Para que el algoritmo responda $C$ se debe cumplir que en cada iteración la arista escogida no esté en $C$.
+    \item El grado de los nodos del grafo debe ser al menos $k$. Y por lo tanto el grafo tiene al menos $nk/2$ aristas.
+\end{enumerate}
+Definamos entonces $E_{i}$ como el evento que en la $i$-ésima iteración del algoritmo escojamos una arista que no está en $C$. La probabilidad que nos interesa calcular entonces es $\mathbb{P}(E_{1}\cap E_{2} \cap \ldots E_{n-2}) = \mathbb{P}(E_{1})\mathbb{P}(E_{2}|E_{1}) \ldots \mathbb{P}(E_{n-2}| E_{1}\cap E_{2} \cap \ldots E_{n-3})$.\\
+Veamos que en general $\mathbb{P}(E_{i}| E_{1}\cap E_{2} \cap \ldots E_{i-1})$ corresponde a la probabilidad que no se escoja una arista de $C$ en el paso $i$ dado que en ninguno de los pasos anteriores esto ha sucedido. Dado que no se ha escogido ninguna arista de $C$ para contraer tenemos un grafo de $n-i+1$ nodos cuyo \textit{min-cut} es de tamaño $\ge k$ (si hubiese un corte más chico $C$ no sería mínimo) y por la observación 1. el grafo debe tener al menos $(n-i+1)k/2$ aristas así la probabilidad de escoger una arista de $C$ es $\le 2/(n-i+1)$ y por lo tanto la de no hacerlo $\ge 1-2/(n-i+1) = \frac{n-i-1}{n-i+1}$. Luego, la probabilidad que el algoritmo encuentre $C$ es mayor o igual a :
+\begin{align*}
+    \prod_{i = 1}^{n-2} \frac{n-i-1}{n-i+1} = \frac{2}{n(n-1)}
+\end{align*}
+\item Si repetimos el algoritmo $n(n-1)\ln{n}$ veces de manera independiente y retornamos el menor de los cortes encontrados como \textit{min-cut}. En este caso la probabilidad que ninguno de las ejecuciones encuentre un \textit{min-cut} es menor o igual a:
+\begin{align*}
+    \left(1-\frac{2}{n(n-1)}\right)^{n(n-1)\ln{n}}\le e^{-2\ln{n}} = \frac{1}{n^2}
+\end{align*}
+\end{enumerate}
+\end{problems}
+
+
+\end{document}
+
+ 

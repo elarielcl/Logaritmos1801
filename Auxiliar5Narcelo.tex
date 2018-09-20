@@ -1,0 +1,129 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts,setspace}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+
+%Teoremas, Lemas, etc.
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lem}{Lema}
+\newtheorem{prop}{Proposici\'on}
+\newtheorem{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem{defi}{Definici\'on}
+\newtheorem{obs}{Observaci\'on}
+\newtheorem{ej}{Ejemplo}
+\newtheorem{ejer}{Ejercicio}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Auxiliar 5 - ``R-Trees y Análisis Amortizado"}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Pablo Barceló}
+\professor{Gonzalo Navarro}
+\assistant{\textst{Manuel} Ariel Cáceres Reyes}
+
+
+\begin{document}
+\maketitle
+\begin{center}
+16 de abril del 2018
+\end{center}
+
+
+\vspace{-1ex}
+
+\cfoot{``I save my money, brother. I don't spend what I don't make.''\\ Joe Penny}
+
+\begin{problems}
+\problem \underline{\textbf{Quack}}\\
+ Un \textit{quack} es una mezcla entre queues y stacks. Puede ser visto como una lista de elementos,
+escrita de izquierda a derecha, que soporta las siguientes operaciones:
+\begin{itemize}
+    \item \texttt{QPush(x)} agrega x en el extremo izquierdo.
+    \item \texttt{QPop(x)} remueve y retorna el elemento más a la izquierda.
+    \item \texttt{QPull(x)} remueve y retorna el elemento m´as a la derecha.
+\end{itemize}
+
+Implemente un \textit{quack} usando tres stacks de modo que cada operación tenga un costo amortizado
+constante, considerando que estos stacks son capaces de ejecutar las operaciones Push y Pop en tiempo constante. Almacene los elementos sólo una vez en cualquiera de los 3 stacks, y utilice a lo más $\mathcal{O}(1)$ de memoria adicional.
+
+\problem \underline{\textbf{Trits}}\\
+ Considere el siguiente sistema redundante de dígitos ternarios.
+Un número se representa como una secuencia de \textit{trits}, que, como su nombre lo indica, pueden tomar tres posibles valores: $0, +1\ o\ −1$. El valor de un número $t_{k−1}, \ldots, t_0$ (donde cada $t_i$ es un \textit{trit}) se define como:
+\begin{align*}
+    \sum_{i=0}^{k-1} t_{i}2^i
+\end{align*}
+
+El proceso de incrementar un número de este tipo es análogo al de la operación en números binarios. Se añade $1$ al \textit{trit} menos significativo; si el resultado es $2$, se cambia
+el \textit{trit} a $0$ y se propaga una reserva hacia el siguiente \textit{trit}. Se repite el proceso hasta que no exista carry.
+El proceso de decrementar es análogo. Comenzando de $0$, se realiza una secuencia de $n$ incrementos y decrementos (sin un orden particular).\ 
+
+Demuestre que, utilizando esta representación, el costo amortizado por operación es $\mathcal{O}(1)$.
+\problem \underline{\textbf{R-Trees}}
+
+\end{problems}
+
+\newpage
+\begin{center}
+{\huge \underline{Soluciones}}
+\end{center}
+\begin{problems}
+\problem \underline{\textbf{Quack}}\\
+Tendremos una pila de $entrada$ en donde \texttt{qpusheamos} y \texttt{qpopeamos} los elementos, y además una pila de $salida$ de donde \texttt{qpulleamos}. En caso que la pila de $entrada$ no tenga elementos para \texttt{qpopear}, vaciamos la primera mitad de la pila de salida en una pila $aux$, vaciamos la otra mitad en la pila de $entrada$ y vaciamos la pila $aux$ en la de salida; llamaremos a esta operación \textit{refilling de entrada} y tiene un costo de $\mathcal{O}(n)$. Por otro lado, en caso que la pila de $salida$ no tenga elementos para \texttt{qpullear}, ponemos la mitad de los elementos de la pila de $entrada$ en una pila $aux$, vaciamos el resto en la pila de $salida$ y finalmente vaciamos la pila $aux$ en la $entrada$; llamaremos a esta operación \textit{refilling de salida}.
+\begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{imagenes/dos_pilas_quack}
+\end{figure}
+
+Analizaremos las operaciones por el método de ``Contabilidad de Costos''. Primero veamos que las tres operaciones tienen costo $\mathcal{O}(1)$ siempre y cuando no se necesite un \textit{refilling}. Por lo tanto, las operaciones pagarán por adelantado estos \textit{refilling}; los \texttt{QPUSH} pagarán por adelantado el \textit{refilling de salida} en que pueda participar el elemento pusheado, los \texttt{QPULL} pagarán el \textit{refilling de salida} de la mitad correspondiente de elementos que quedaron en la pila de $entrada$ en el anterior \textit{refilling de entrada}, finalmente, los \texttt{QPOP} pagarán por adelantado el \textit{refilling de entrada} de los elementos correspondientes de la pila de $salida$ del anterior \textit{refilling de salida}.
+\problem \underline{\textbf{Trits}}\\
+Consideremos el potencial $\phi = $ cantidad de $1$s y $-1$s. Veamos que $\phi_0 = 0$ y $\phi_i \ge 0$ por ser una cantidad.\\
+Analicemos ahora el costo amortizado por operación.\\
+
+En el caso del incremento, supongamos que hay $l$ $1$s consecutivos en las posiciones menos significativas del número y que luego de ellos hay un $0$ o un $-1$. En este caso tenemos que:
+\begin{align*}
+    \hat{c} &= c + \Delta \phi \\
+    &\le (l+1) + (-l + 1)\\
+    &= 2
+\end{align*}
+
+En el caso del decremento, supongamos que hay  $l$ $-1$s consecutivos en las posiciones menos significativas del número y que luego de ellos hay un $0$ o un $1$. En este caso también tenemos que:
+\begin{align*}
+    \hat{c} &= c + \Delta \phi \\
+    &\le (l+1) + (-l + 1)\\
+    &= 2
+\end{align*}
+\problem \underline{\textbf{R-Trees}}\\
+Para más información consultar el apunte del curso.
+\end{problems}
+\end{document}

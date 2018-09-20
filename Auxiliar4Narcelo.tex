@@ -1,0 +1,142 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts,setspace}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+
+%Teoremas, Lemas, etc.
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lem}{Lema}
+\newtheorem{prop}{Proposici\'on}
+\newtheorem{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem{defi}{Definici\'on}
+\newtheorem{obs}{Observaci\'on}
+\newtheorem{ej}{Ejemplo}
+\newtheorem{ejer}{Ejercicio}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Auxiliar 4 - ``Algoritmos en Memoria Secundaria"}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Pablo Barceló}
+\professor{Gonzalo Navarro}
+\assistant{\textst{Manuel} Ariel Cáceres Reyes}
+
+
+\begin{document}
+\maketitle
+\begin{center}
+9 de abril del 2018
+\end{center}
+
+
+\vspace{-1ex}
+
+\cfoot{``Someone is sitting in the shade today because someone planted a tree a long time ago. ''\\Warren Buffett}
+
+\begin{problems}
+
+\problem {\large\underline{\textbf{Relación}}}\\
+Dada una relación binaria $\mathcal{R} \subseteq \{1, \ldots, k \} \times \{1, \ldots, k \}$, representada como un archivo secuencial de sus pares $(i, j)$, construya algoritmos eficientes (considerando
+que $N \gg M$) para determinar si la relación es:
+\begin{enumerate}[a)]
+    \item Refleja
+    \item Simétrica
+\end{enumerate}
+
+\problem {\large\underline{\textbf{Desordenar}}}\\
+Se nos pide desordenar un archivo ordenado de números reales. Teniendo una función \texttt{rand(t)}
+que nos da un entero aleatorio uniforme entre $1$ y $t$, debemos leer un archivo de disco de largo $N$ y producir otro de largo $N$, donde se encuentren los mismos elementos permutados.\\
+Su programa debe producir cualquier permutación con la misma probabilidad (para simplificar, no describa cómo permutar uniformemente en memoria interna).
+\begin{enumerate}[a)]
+    \item Resuelva el problema en $\mathcal{O}(n)$ I/Os para el caso en que $N \le M^2/B$.
+    \item Resuelva el problema en el mismo tiempo de ordenar en disco, para el caso general.
+\end{enumerate}
+
+\problem {\large\underline{\textbf{Join y Split en B-tree}}}\\
+\begin{enumerate}[a)]
+    \item La operación de \texttt{join} de B-trees toma como entrada dos B-trees $T_1$ y $T_2$ , y una llave $x$ tal que toda llave en $T_1$ es menor que $x$ y toda llave en $T_2$ es mayor que $x$, y entrega como resultado un B-tree contiene a $x$ y a todas las llaves en $T_1$ y en $T_2$.\\
+Explique cómo implementar la operación de \texttt{join} entre $T_1$ y $T_2$ utilizando a lo más\\ $\mathcal{O}(1 + |h(T_1) − h(T_2)|)$ accesos a memoria secundaria, donde $h(T)$ representa la altura de la raíz de $T$.
+\item La operación de \texttt{split} de B-trees toma como entrada un B-tree $T$, y una
+llave $x$ en $T$ , y entrega como resultado dos B-trees $T_1$ y $T_2$ tal que $T_1$ contiene todas las llaves en $T$ que son estrictamente menores que $x$ y $T_2$ contiene todas las llaves en $T$ que son estrictamente mayores que $x$.\\ Explique cómo implementar
+esta operación con $\mathcal{O}(B\cdot h(T))$ accesos a memoria secundaria.
+\end{enumerate}
+
+\end{problems}
+
+\newpage
+\begin{center}
+{\huge \underline{Soluciones}}
+\end{center}
+\begin{problems}
+\problem {\large\underline{\textbf{Relación}}}\\
+Para esta pregunta asumiremos que no se repiten pares.
+\begin{enumerate}[a)]
+\item Basta tener un contador iniciado en $0$, escanear todo el input bloque por bloque y cuando encontramos un par de la forma $(i,i)$ aumentamos el contador. Cuando terminamos de escanear respondemos que la relación es refleja si el contador es igual a $k$, no en caso contrario. Como solo escaneamos el input una vez hacemos $n=\frac{N}{B}$ llamadas a disco. \flash
+\item Con el siguiente algoritmo:
+\begin{itemize}
+    \item Hacer una copia de los pares, pero con sus coordenadas invertidas. $\mathcal{O}(n)$.
+    \item Ordenar tanto el original como la copia lexicográficamente (es decir, por la primera coordenada y en caso de empate mirar la segunda coordenada para decidir). $\mathcal{O}(n\log_{m}n)$ , con $m = \frac{M}{B}$.
+    \item Comparar que tanto la copia como el original sean iguales. $\mathcal{O}(n)$
+\end{itemize}
+Por lo tanto, el costo del algoritmo es $\mathcal{O}(n\log_{m}n)$ llamadas a disco.
+\end{enumerate}
+\problem {\large\underline{\textbf{Permutar}}}\\
+\begin{enumerate}[a)]
+\item
+\begin{enumerate}[1.]
+    \item Haremos operaciones sobre $N/M$ archivos (las operaciones serán hechas con buffers de tamaño $\le B$ por lo que ocuparemos $\le BN/M \le M$ memoria principal).
+    \item Al azar distribuimos uniformemente los elementos del input a los archivos ($M$ elementos en cada archivo).
+    \item Por cada archivo: lo leemos, lo permutamos en memoria principal y lo volvemos a escribir a memoria secundaria.
+    \item Finalmente, vamos eligiendo al azar un archivo (dejamos de considerarlos si quedan vacíos) y sacamos el primer elemento de el y lo ponemos en el output.
+\end{enumerate}
+\item Por la restricción ya no podemos procesar $N/M$ archivos al mismo tiempo, por lo que solo lo haremos con $M/B$ archivos y resolveremos los subproblemas que quedan recursivamente.\\
+Así para permutar un archivo de tamaño $N$ haremos lo siguiente:
+\begin{enumerate}[1.]
+    \item Haremos operaciones sobre $M/B$ archivos (las operaciones serán hechas con buffers de tamaño $\le B$ por lo que ocuparemos $\le BM/B \le M$ memoria principal).
+    \item $<$Mismo que en parte anterior$>$.
+    \item Por cada archivo: lo permutamos recursivamente.
+    \item $<$Mismo que en parte anterior$>$.
+\end{enumerate}
+Así obtenemos la ecuación de recurrencia $T(N) = m T(N/m) + \mathcal{O}(n)$ para las operaciones en memoria secundaria, cuya solución es $\mathcal{O}(n\log_m n)$.
+\end{enumerate}
+\problem {\large\underline{\textbf{Split y Merge en B-tree}}}\\
+Para resolver esta pregunta agregaremos a los nodos del B-tree su altura, lo que no tiene costo adicional en operaciones de memoria secundaria, pues estos árboles \textit{crecen por arriba} (cuando creamos una nueva raíz su altura es igual a $1$ más la altura de sus hijos).
+\begin{enumerate}[a)]
+    \item El enfoque general será hacer \textit{merge} de dos nodos de $T_{1}$ y $T_{2}$ igual altura. En caso que tengan la misma altura, estos nodos serán las raíces de $T_{1}$ y $T_{2}$.Por otro lado, si $h(T_{1}) < h(T_{2})/h(T_{1}) > h(T_{2})$ los nodos serán la raíz de $T_{1}/T_{2}$ y el hijo más izquierdo/derecho de $T_{2}/T_{1}$ de altura $h(T_{1})/h(T_{2})$. Al hacer el \textit{merge} de ambos nodos, si nos quedan más de $B$ elementos en el nodo, hacemos un \textit{split} basado en la mediana de los elementos y esta mediana sube recursivamente en el árbol, como sucede en la inserción normal de B-trees. El costo en operaciones de disco será entonces el de encontrar los nodos de igual altura $\mathcal{O}(|h(T_{1})-h(t_{2}))$ más el de posiblemente hacer \textit{split} de la raíz del árbol más alto $\mathcal{O}(1)$.
+    
+    \item Primero buscamos $x$ en el B-tree a costo $\mathcal{O}(h(T))$, luego convertimos al padre de la hoja donde se encuentra $x$ en $T_{1}$ y $T_{2}$ respectivamente, en este momento de altura $1$.
+    Al devolvernos de la búsqueda vamos haciendo \texttt{join} de $T_{1}$ con cada uno de los árboles que están a la izquierda del camino que se tomó para hacer la búsqueda de $x$ y de $T_{2}$ con los árboles que están a la derecha del camino. Finalmente, notando que se hacen $\mathcal{O}(B)$ \texttt{join} por nivel y que los \texttt{join} se realizan entre árboles cuya diferencia de altura es a lo más $1$, el costo total de este \texttt{split} será $\mathcal{O}(B\cdot h(T))$.
+\end{enumerate}
+\end{problems}
+\end{document}

@@ -1,0 +1,186 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts,setspace}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[spanish]{babel}
+\usepackage[lined,boxed,commentsnumbered]{algorithm2e}
+\SetKwInput{KwIn}{Input}
+\renewcommand{\algorithmcfname}{Algoritmo}
+\renewcommand{\figurename}{Figura}
+\renewcommand{\tablename}{Tabla}
+
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Tarea 2 - Colas de Prioridad}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Pablo Barceló}
+\professor{Gonzalo Navarro}
+\assistant{Manuel Cáceres}
+\assistantt{Fabián Mosso}
+\assistantt{Jaime Salas}
+
+
+\begin{document}
+\captionsetup[table]{name=Tabla}
+\captionsetup[table]{name=Figura}
+
+\maketitle
+\vspace{-1ex}
+\section{Introducción}
+Consideraremos una cola de prioridad como un \textit{tipo de dato abstracto} que implementa las siguientes operaciones :
+\begin{itemize}
+    \item \texttt{insertar(x, p)}, que inserta el elemento $x$ a la cola con prioridad $p$.
+    \item \texttt{extraer\_siguiente()}, que extrae y retorna el elemento de mayor prioridad que se encuentra en la cola.
+    \item \texttt{meld($c_{0}$, $c_{1}$)}, que crea una nueva cola de prioridad conteniendo los elementos de las colas $c_{0}$ y $c_{1}$ con sus prioridades correspondientes. Esta operación supone que los elementos de $c_{0}$ y $c_{1}$ son disjuntos.
+\end{itemize}
+El objetivo de esta tarea es implementar y evaluar en la práctica diferentes formas de implementar colas de prioridad:
+\begin{itemize}
+    \item Heap Clásico
+    \item Cola Binomial
+    \item Cola de Fibonacci
+    \item Leftist Heap
+    \item Skew Heap
+\end{itemize}
+
+Se espera que se \textit{implementen} los algoritmos, \textit{realicen} los experimentos correspondientes y se entregue un \textit{informe} que indique claramente los siguientes puntos:
+\begin{enumerate}[1.]
+    \item Las \textit{hipótesis} escogidas antes de realizar los experimentos.
+    \item El \textit{diseño experimental}, incluyendo los detalles de la implementación de los algoritmos, la generación de las instancias y las medidas de rendimiento utilizadas.
+    \item La \textit{presentación de los resultados} en forma de una descripción textual, tablas y/o gráficos.
+    \item El \textit{análisis e interpretación} de los resultados.
+\end{enumerate}
+\section{Estructuras}
+\subsubsection*{Propiedad de Heap}
+Todas la estructuras explicadas a continuación cumplen la \textit{propiedad de heap} en sus nodos. Esta dice que el valor de un nodo debe ser mayor o igual que el valor de sus hijos.
+\subsection{Heap Clásico}
+Corresponde al \textit{heap binario} (árbol binario completo), es la forma más simple de implementar una cola de prioridad de manera eficiente (todas sus operaciones en $\mathcal{O}(\log{n})$).\ Su funcionamiento se basa en las operaciones \texttt{sumergir} y \texttt{emerger} que reparan la \textit{propiedad de heap}. Además se puede construir a partir de un conjunto de datos con la función \textit{heapify}.\\
+
+Las operaciones son implementadas de la siguiente forma:
+
+\begin{itemize}
+    \item \texttt{insertar(x, p)}, pone el elemento al final del \textit{heap} y le aplica la función de \texttt{emerger}.
+    \item \texttt{extraer\_siguiente()}, saca el primer elemento del \textit{heap} y lo retorna, luego pone el último elemento al principio y le aplica la función de \texttt{sumergir}.
+    \item \texttt{meld($c_{0}$, $c_{1}$)}, junta los elementos de ambos \textit{heaps} y le aplica la función de \texttt{heapify} al conjunto de datos.
+\end{itemize}
+Para más detalles de esta estructura puede consultar los apuntes del curso CC3001 en\ 
+
+\url{https://users.dcc.uchile.cl/~bebustos/apuntes/cc3001/TDA/#4}
+
+\subsection{Cola Binomial}
+Corresponde a la estructura vista en cátedras que obtiene una mejor complejidad para la operación de \texttt{meld}. Su funcionamiento se basa en mantener un \textit{bosque binomial}, que corresponde a un conjunto de \textit{árboles binomiales} de distinto tamaño. Para esto utiliza la operación de \texttt{suma} de colas.\\
+
+Las operaciones son implementadas de la siguiente forma:
+\begin{itemize}
+    \item \texttt{insertar(x, p)}, crea un árbol binomial de un elemento que contiene el elemento insertado, luego aplica la función \texttt{suma} del árbol con la cola.
+    \item \texttt{extraer\_siguiente()}, encuentra el máximo en la raíz de uno de los árboles binomiales de la cola (esta ubicación se precalcula en cada uno de las operaciones que modifican la cola), lo extrae y lo retorna. Para volver a ser cola binomial se aplica la función \texttt{suma} entre la cola y los hijos de la raíz extraída.
+    \item \texttt{meld($c_{0}$, $c_{1}$)}, se aplica la función \texttt{suma} entre ambas colas.
+\end{itemize}
+Para más detalles de esta estructura puede consultar los apuntes de este curso disponible en la sección Material Docente de U-Cursos.
+
+\subsection{Cola de Fibonacci}
+Es la variante \textit{lazy} de la \textit{Cola Binomial}. Mantiene un conjunto de árboles binomiales (posiblemente algunos de igual tamaño que otros) y no los convierte en un \textit{bosque binomial} hasta que se realiza una operación de \texttt{extraer\_siguiente()}. Lo anterior genera costo constante para la \texttt{insercion} y el \texttt{meld}, pero aumenta el costo de \texttt{extraer\_siguiente()}, solo asegurando $\mathcal{O}(\log{n})$ amortizado.\\
+
+Las operaciones son implementadas de la siguiente forma:
+\begin{itemize}
+    \item \texttt{insertar(x, p)}, crea un árbol binomial de un elemento que contiene el elemento insertado y se une a la cola.
+    \item \texttt{extraer\_siguiente()}, encuentra el máximo en la raíz de uno de los árboles binomiales de la cola (operación que se tiene precalculada), lo extrae y lo retorna. Luego de esto convierte el conjunto de árboles binomiales en un \textit{bosque binomial}.
+    \item \texttt{meld($c_{0}$, $c_{1}$)}, se unen los conjuntos de árboles binomiales de ambas colas.
+\end{itemize}
+Para más detalles de esta estructura puede consultar los apuntes de este curso disponible en la sección Material Docente de U-Cursos.
+\subsection{Leftist Heap}
+El \textit{leftist heap} es un árbol binario que logra implementar las tres operaciones en tiempo $\mathcal{O}(\log{n})$. Para lograrlo, aparte de la \textit{propiedad de heap}, mantiene el siguiente invariante en sus nodos:
+\begin{displayquote}
+``El largo a través del hijo derecho del camino más corto a una hoja es menor o igual al largo a través del hijo izquierdo del camino más corto a una hoja''
+\end{displayquote}
+La operación principal corresponde a la función de \texttt{meld} que se encarga de preservar este invariante.\\
+
+Las operaciones son implementadas de la siguiente forma:
+\begin{itemize}
+    \item \texttt{insertar(x, p)}, crea un nuevo nodo, al cual se aplica la función \texttt{meld} para unirlo con la cola.
+    \item \texttt{extraer\_siguiente()}, se extrae la raíz del árbol y se aplica la función \texttt{meld} entre los hijos de esta.
+    \item \texttt{meld($c_{0}$, $c_{1}$)}, el procedimiento es el siguiente:
+    \begin{itemize}
+        \item Elegir el mayor valor entre las raíces de los \textit{leftist heaps}, supongamos que el mayor valor lo tiene la cola $c_i$.
+        \item Hacer \texttt{meld} entre $c_{1-i}$ y el hijo derecho de $c_i$.
+        \item Al volver de la recursión hacer \textit{swap} de los hijos si el invariante de \textit{leftist heap} fue roto.
+    \end{itemize}
+\end{itemize}
+Para más detalles de esta estructura puede consultar el  siguiente link :  \ 
+\url{https://books.google.cl/books?id=fQVZy1zcpJkC&pg=SA5-PA1&lpg=SA5-PA1&redir_esc=y#v=onepage&q&f=false}
+
+\subsection{Skew Hep}
+El \textit{skew heap} corresponde a la variante ``ciega'' del \textit{leftist heap}, la diferencia con este último consiste en que no se mantiene el invariante extra y en cambio, en la operación de \texttt{meld} \textbf{siempre} hace \textit{swap} de los hijos en la vuelta de la recursión. Lo anterior hace la complejidad sea de $\mathcal{O}(\log{n})$ amortizado.\
+
+Como se dijo anteriormente las operaciones son análogas a las del \textit{leftist heap}, solo cambiando la vuelta de la recursión del \texttt{meld} en donde ahora a los hijos \textbf{siempre} se les hace \textit{swap}.\\
+Para más detalles de esta estructura puede consultar el  siguiente link :  \\
+
+\url{https://books.google.cl/books?id=fQVZy1zcpJkC&pg=SA6-PA1&lpg=SA6-PA1&redir_esc=y#v=onepage&q&f=false}
+
+\section{Aplicaciones}
+Se pide que además implemente dos aplicaciones de uso de las colas de prioridad.
+
+\subsection*{Ordenar}
+Para ordenar con una cola de prioridad hacemos un \texttt{heapify} en los datos (construcción especial es caso que exista o inserciones desde una estructura vacía en otro caso) y luego extraemos todos los elementos de mayor a menor con \texttt{extraer\_siguiente()}
+
+\subsection*{Inserción y Melding}
+La segunda aplicación consiste en la formación de una cola de prioridad a partir de un conjunto de $n$ datos. Dado un parámetro $k = 2^i$,
+\begin{itemize}
+    \item Dividimos el conjunto en $k$ partes de igual tamaño.
+    \item Para cada parte insertamos todos sus elementos en una cola de prioridad encargada de mantener los elementos de este conjunto. A este proceso le llamaremos \texttt{Inserción}.
+    \item Finalmente haremos \texttt{melding} entre todas las colas. Dado que los costos de \texttt{melding} dependen del tamaño de la colas, organizaremos los \texttt{melding} según el orden de un torneo de tenis perfectamente balanceado, es decir, siempre haciendo \texttt{melding} de conjuntos de igual tamaño. A este proceso le llamaremos \texttt{Melding}.
+\end{itemize}
+
+\section{Datos y Experimentos}
+A continuación se detallan los experimentos que realizarán. Considere en ellos que los datos del input son los elementos y al mismo tiempo su prioridad.
+
+\subsection*{Ordenar}
+Genere una permutación aleatoria de los números de $1 \ldots n = 2^j$, para $j\in \{15, 16,\ldots, 21\}$. Mida el tiempo de ordenar el arreglo con cada una de las implementaciones de cola de prioridad, además mida los tiempos de \texttt{heapify} y \texttt{extraer\_siguiente} para cada uno de los tamaños de input.
+
+\subsection*{Inserción y Melding}
+Genere una permutación aleatoria de los números de $1 \ldots n = 2^{20}$. Para cada $k = 2^i$, para $i\in \{0, \ldots 15\}$ genere la cola de prioridad de todos los elementos con el proceso de \texttt{Inserción y Melding} antes explicados y con cada una de las implementaciones de cola de prioridad.\\ Nuevamente, mida el tanto el tiempo total de la operación además mida el tiempo de \texttt{Inserción} y \texttt{Melding} para cada uno de los tamaños de inputs y para cada valor de $k$.\\
+
+
+
+Determine, además, y de acuerdo a las repeticiones que haga de sus experimentos, el error asociado a los promedios para las mediciones que realice, y utilícelo en sus gráficos.
+
+\section{Entrega de la Tarea}
+\begin{itemize}
+    \item La tarea puede realizarse en grupos de a lo más 2 personas.
+    \item Para la implementación solo puede utilizar C, C++ o Java. Para el informe se recomienda utilizar \LaTeX .
+    \item Siga buenas prácticas (\textit{good coding practices}) en sus implementaciones.
+    \item Escriba un informe claro y conciso. Las ponderaciones del informe y la implementación en su nota final son las mismas.
+    \item Tenga en cuenta las sugerencias realizadas en las primeras clases sobre la forma de realizar y presentar experimentos.
+    \item La entrega será a través de U-Cursos y deberá incluir el informe junto con el código fuente de la implementación (y todas las indicaciones necesarias para su ejecución).
+    \item Se permiten atrasos con un descuento de 0.5 puntos por día.
+\end{itemize}
+\end{document}
+

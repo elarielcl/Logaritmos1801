@@ -1,0 +1,172 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts,setspace}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[spanish]{babel}
+\usepackage[lined,boxed,commentsnumbered]{algorithm2e}
+\SetKwInput{KwIn}{Input}
+\renewcommand{\algorithmcfname}{Algoritmo}
+\renewcommand{\figurename}{Figura}
+\renewcommand{\tablename}{Tabla}
+
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Tarea 3 - Min-Cut}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Pablo Barceló}
+\professor{Gonzalo Navarro}
+\assistant{Manuel Cáceres}
+\assistantt{Fabián Mosso}
+\assistantt{Jaime Salas}
+
+\begin{document}
+\captionsetup[table]{name=Tabla}
+\captionsetup[table]{name=Figura}
+
+\maketitle
+\vspace{-1ex}
+\section{Introducción}
+Dado un grafo $G = (V,E)$ simple (no dirigido, sin \textit{self-loops} ni multiaristas) y conexo, llamaremos \textit{corte} a todo conjunto de aristas $C\subseteq E$ que al sacarlas de $G$ desconecta el grafo en dos o más componentes conexas, es decir $(V,E\setminus C)$ no es conexo.\\ 
+El problema de \textit{min-cut} consiste en encontrar un \textit{corte} de tamaño mínimo (pues puede que exista más de uno de tamaño mínimo).\\
+
+En esta tarea se trabajará con tres enfoques para resolver este problema: uno determinista, uno probabilista y una mezcla de los anteriores. Se solicita que sus hipótesis y análisis se enfoquen en los \textit{tradeoffs} de correctitud (probabilidad de error) versus tiempo.\\
+Se espera que se \textit{implementen} los algoritmos, \textit{realicen} los experimentos correspondientes y se entregue un \textit{informe} que indique claramente los siguientes puntos:
+\begin{enumerate}[1.]
+    \item Las \textit{hipótesis} escogidas antes de realizar los experimentos.
+    \item El \textit{diseño experimental}, incluyendo los detalles de la implementación de los algoritmos, la generación de las instancias y las medidas de rendimiento utilizadas.
+    \item La \textit{presentación de los resultados} en forma de una descripción textual, tablas y/o gráficos.
+    \item El \textit{análisis e interpretación} de los resultados.
+\end{enumerate}
+
+\section*{Teorema de Weighted-Min-Cut y Max-Flow}
+\textit{Min-Cut} se puede resolver determinísticamente usando una generalización del problema denominada \textit{Weighted-Min-Cut} y la relación de este último con el problema \textit{Max-Flow} de flujos en grafos.
+
+\subsection*{Weighted-Min-Cut}
+Es una generalización de \textit{Min-Cut} que considera pesos en las aristas del grafo, la idea ahora es encontrar el \textit{corte} de menor peso. Más formalmente, sea $w:E\to \mathbb{R}^+$, una función de pesos en las aristas del grafo y $C$ un \textit{corte} del grafo, definimos el peso de $C$ como la suma de los pesos de sus arcos, $w(C) = \sum_{e\in C} w(e)$. El problema de \textit{Weighted-Min-Cut} consiste en encontrar el \textit{corte} de peso mínimo.
+
+\subsubsection*{s-t, Weighted-Min-Cut}
+Es una variante del problema  \textit{Weighted-Min-Cut} que fija dos vértices $s\not = t \in V$ y solo considera aquellos \textit{cortes} que desconectan a $s$ de $t$ en el grafo.
+
+\subsection*{Max-Flow}
+El problema de \textit{Max-Flow} consiste en encontrar la mayor cantidad de \textit{flujo} que se puede enviar entre dos nodos del grafo, es por eso que se define para grafos dirigidos y se tiene como restricciones al problema cotas superiores en la cantidad de flujo que se puede enviar por una arista: la capacidad.\\ Más formalmente, dado un grafo dirigido $\vec{G} = (V, \vec{E})$, una función de capacidad sobre las aristas $w:\vec{E}\to \mathbb{R}^+$ (con su extensión respectiva para conjuntos de aristas) y dos vértices $s,t\in V, s\not = t$, se define un \textit{s-t flujo}, como una asignación de las aristas $f:\vec{E}\to \mathbb{R}^+$, tal que:
+\begin{itemize}
+    \item $f(u,v)\le w(u,v), \forall (u,v) \in \vec{E}$, es decir, el flujo enviado por una arista es menor o igual a su capacidad. A esta propiedad se le denomina \textit{restricción de la capacidad}.
+    \item $\sum_{(u,v) \in \vec{E}} f(u,v) = \sum_{(v,u) \in \vec{E}} f(v,u), \forall v \in V\setminus\{s,t\}$, es decir, el flujo de entrada es igual al flujo de salida. A esta propiedad se le denomina \textit{conservación del flujo}.
+\end{itemize}
+  El problema de \textit{Max-Flow} consiste en encontrar la asignación $f$, que maximice el flujo enviado desde $s$, $\sum_{(s,v)\in\vec{E}}f(s,v)$.
+\subsection*{Teorema de Weighted-Min-Cut, Max-Flow}
+Este teorema expone que dados dos vértices $s,t$ en un grafo dirigido $(V,\vec{E})$, en el cual la asignación de capacidad y la de pesos es idéntica, el valor del máximo flujo enviado desde $s$ a $t$ es igual al peso del \textit{s-t, Weighted-Min-Cut}.
+\section{Algoritmo Determinista}
+Para determinar la solución de \textit{Min-Cut} usaremos un algoritmo $MF$ que resuelva \textit{Max-Flow} de manera eficiente \footnote{Esta implementación puede ser obtenida de una fuente externa, al final de este archivo se encuentran algunas fuentes \ref{Links}.}. La reducción es como sigue: 
+\begin{itemize}
+    \item El resultado de \textit{Min-Cut} lo obtendremos de \textit{Weighted-Min-Cut}, asignando a todas las aristas un peso de $1$.
+    \item Para resolver \textit{Weighted-Min-Cut}, lo que haremos será utilizar el teorema \textit{Weighted-Min-Cut, Max-Flow}. Más específicamente, fijamos un $s\in V$ y luego por cada $t\not = s\in V$, usamos $MF$ para encontrar el \textit{s-t , Max-Flow} (que es igual al \textit{s-t, Weighted-Min-Cut})\footnote{El grafo de input utilizado por $MF$ es mismo del input poniendo aristas dirigidas en ambos sentidos con capacidades igual al peso de la arista del grafo original.}; finalmente la respuesta será el mínimo entre todas estas ejecuciones.
+\end{itemize}
+
+\section{Algoritmo de Karger}
+El \textit{algoritmo de Karger} es un algoritmo probabilista que resuelve el problema de \textit{Min-Cut} con una probabilidad de éxito mayor a $\binom{n}{2}^{-1}$, para lograrlo transforma el grafo de entrada en un grafo con \textit{multiaristas} (pero sin \textit{self-loops}) y contrae aristas al azar del grafo, hasta que el grafo lo conforman solo $2$ vértices.\
+
+Entenderemos \textit{contraer} una arista $e = \{u,v\} \in E$, como el proceso de fusionar los extremos de la arista en un nuevo nodo cuyos vecinos corresponden a los vecinos de los nodos fusionados, excepto ellos mismos (en caso que $u$ y $v$ sean vecinos). Más formalmente, llamaremos $G/e$ al grafo $G$ al que se le contrajo la arista $e$ dado por:
+\begin{align*}
+G/e =& (V\setminus \{u,v\} \cup \{v_{u,v}\} ,\\
+&(e = \{x,y\} \in E : x \not = u \land y \not = u \land x \not = v \land y \not = v ) \\ & +(\{x,v_{u,v}\} : x \in \{\{y,v\} \in E\} ) \\ & +(\{x,v_{u,v}\} : x \in \{\{y,u\} \in E\} ))   
+\end{align*}
+Con esto el \textit{algoritmo de Karger} es como sigue :\\
+\begin{algorithm}[H]
+        \SetAlgoLined
+        $(V',E') = Multigraph(V,E)$\\
+        \For{$i\gets 1\ldots n-2$}{
+            Elegimos una arista $e\in E'$ uniformemente al azar y la contraemos del grafo $(V',E')$ actualizando $V'$ y $E'$.
+        }
+        \Return $E'$
+\end{algorithm}
+
+Finalmente, para disminuir la probabilidad de error del algoritmo, lo que haremos será ejecutarlo $k$ veces y responder el menor conjunto de aristas encontrado como el \textit{Min-Cut}.
+\section{Una mezcla}
+El tercer approach que tomaremos será utilizar ambas ideas expuestas anteriormente. Esto nos permitirá ajustar el \textit{tradeoff} de tiempo versus probabilidad de error. Para esto ejecutaremos el \textit{algoritmo de Karger} pero ahora hasta que nos queden $t \in \{2, 3, \ldots, n\}$ vértices en el multigrafo y ocuparemos el algoritmo $MF$ para computar el \textit{Min-Cut} del grafo resultante, dándolo como respuesta.\textit{Note que el parámetro $t$ es un calibrador del \textit{tradeoff} de tiempo versus probabilidad de error, a mayor $t$ menor es la probabilidad de error pero el tiempo aumenta}.\\
+Finalmente, consideraremos repetir este algoritmo probabilista $k$ veces para disminuir la probabilidad de error.\newpage
+
+Con esto, nuestro algoritmo probabilista queda como sigue :\\
+\begin{algorithm}[H]
+        \SetAlgoLined
+        $(V',E') = Multigraph(V,E)$\\
+        \For{$i\gets 1\ldots n-t$}{
+            Elegimos una arista $e\in E'$ uniformemente al azar y la contraemos del grafo $(V',E')$ actualizando $V'$ y $E'$.
+        }
+        \Return $Min-Cut-Determinista((V',E'))$
+\end{algorithm}
+
+\section{Experimentos}
+En esta tarea se pide comparar la correctitud  (probabilidad de error) y el tiempo de los resultados dados por los tres algoritmos antes explicados. Para esto tendrá que correr todas las implementaciones en grafos de distintos tamaños explicados más adelante.\\
+
+Recuerde repetir los experimentos para los distintos tamaños de manera de obtener promedios confiables, tampoco olvide documentar los intervalos de confianza de sus resultados.\\
+
+Para \textit{Max-Flow} reporte tanto los algoritmos (nombre y complejidad teórica) utilizados por la implementación, como los tiempos correspondientes.\\
+
+Para las tres implementaciones reporte los tiempos en los distintos inputs, en el caso de la implementación del \textit{algoritmo de Karger} reporte como avanza la probabilidad de error según el número $k$ de repeticiones realizadas. Para el algoritmo \textit{una mezcla}, realice el mismo reporte anterior considerando $5$ valores de $t$ distribuidos uniformemente en el rango $[3,n-1]$.
+
+
+\subsection*{Datos}
+
+\subsubsection*{Grafos Aleatorios}
+Construya grafos de $n = 2^i$ con $i \in \{10, 11, \ldots, 15\}$ vértices y genere las aristas según el siguiente proceso probabilístico:\\
+
+\begin{algorithm}[H]
+
+\SetAlgoLined
+\KwIn{$(V,p)$}
+ $E\gets \emptyset$\;
+ \For{$(u, v) \in \binom{V}{2}$}{
+  Con probabilidad $p$ hacer:
+    $E\gets E \cup \{(u, v)\}$\;
+ }
+ \KwRet{$G = (V, E)$}
+
+ 
+\end{algorithm}
+Escoja al menos 5 valores de $p$ distribuidos en $[1/n,  1]$, escoja los valores de $p$ de modo de poner a prueba sus hipótesis.
+\section{Entrega de la Tarea}
+\begin{itemize}
+    \item La tarea puede realizarse en grupos de a lo más 2 personas.
+    \item Para la implementación solo puede utilizar C, C++ o Java. Para el informe se recomienda utilizar \LaTeX .
+    \item Siga buenas prácticas (\textit{good coding practices}) en sus implementaciones.
+    \item Escriba un informe claro y conciso. Las ponderaciones del informe y la implementación en su nota final son las mismas.
+    \item Tenga en cuenta las sugerencias realizadas en las primeras clases sobre la forma de realizar y presentar experimentos.
+    \item La entrega será a través de U-Cursos y deberá incluir el informe junto con el código fuente de la implementación (y todas las indicaciones necesarias para su ejecución).
+    \item NO se permitirán atrasos para esta tarea.
+\end{itemize}
+\section{Links}\label{Links}Los siguientes links contienen implementaciones del algoritmo de \textit{Max-Flow} :
+\begin{itemize}
+    \item La librería Boost C++ incluye una implementación de \textit{Max-Flow}, \url{https://www.boost.org/}.
+    \item La libreria algs4 Java incluye una implementación de \textit{Max-Flow}, \url{https://algs4.cs.princeton.edu/code/}
+\end{itemize}
+\end{document}
+

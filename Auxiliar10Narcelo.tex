@@ -1,0 +1,118 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts,setspace}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+
+%Teoremas, Lemas, etc.
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lem}{Lema}
+\newtheorem{prop}{Proposici\'on}
+\newtheorem{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem{defi}{Definici\'on}
+\newtheorem{obs}{Observaci\'on}
+\newtheorem{ej}{Ejemplo}
+\newtheorem{ejer}{Ejercicio}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Auxiliar 10 - ``Algoritmos Online y Análisis Competitivo"}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Gonzalo Navarro}
+\assistant{\textst{Manuel} Ariel Cáceres Reyes}
+
+
+\begin{document}
+\maketitle
+\begin{center}
+12 de Julio del 2018
+\end{center}
+
+
+\vspace{-1ex}
+
+\cfoot{``Many of my friends were people I met online.''\\ Sam Altman}
+
+\begin{problems}
+\problem {\large\underline{\textbf{Tom y Jerry}}}\\
+Jerry lanza platos desde lo alto de un armario y Tom intenta recogerlos antes de que se estrellen en el suelo del pasillo. El pasillo tiene $2k + 1$ baldosas y Tom recorre una baldosa por segundo. Un plato tarda $k$ segundos en llegar al suelo desde que Jerry lo lanza. Tom sabe en qué baldosa caerá el plato en el instante
+en que Jerry lo lanza, de manera que puede recorrer hasta $k$ baldosas para salvarlo. Jerry lanza un plato por segundo, y lo puede lanzar hacia la baldosa que quiera.
+Nos interesa diseñar una estrategia competitiva para Tom (en términos de la cantidad de platos salvados). Tom comienza parado en la baldosa central, y Jerry lanzará $n$ platos.
+\begin{enumerate}[a)]
+    \item Muestre que la estrategia de ir a buscar el siguiente plato lanzado en caso de que sea posible alcanzarlo (e ignorar todo hasta recogerlo), y sino seguir en el mismo lugar esperando el próximo plato, no es $c$-competitiva para ninguna constante $c$.
+    \item Muestre que la estrategia de ir a buscar siempre el plato más cercano al suelo, tampoco es $c$-competitiva.
+    \item Diseñe una estrategia $2k$-competitiva para Tom. Demuestre su competitividad y encuentre un caso donde se salve sólo uno de cada $2k$ platos que podría salvar en el algoritmo óptimo (que leyera la mente de Jerry).
+\end{enumerate}
+\problem {\large\underline{\textbf{La feria Online}}}\\
+Tiene usted $k\$$ y quiere gastarse la mayor cantidad posible en una feria a lo largo de una calle de un solo sentido (es decir, usted solo puede hacer una pasada por ella), de modo que cuando compra algo ya no puede devolverlo (además hay un solo ejemplar de cada producto).\\ Los productos tienen
+distintos precios entre $1$ y $k$. Pero por ejemplo si se gasta $1\$$ en el primer producto, y todos los demás cuestan $k\$$, no podrá comprar nada más. 
+\begin{enumerate}[a)]
+    \item Muestre que no se puede ser mejor que $k$-competitivo para este problema.
+    \item Considere ahora una variante en la que usted puede devolver uno o más productos ya comprados y recuperar el dinero (pero no puede comprar algo por lo que ya pasó). Muestre un algoritmo $2$-competitivo para este caso.
+\end{enumerate}
+\end{problems}
+\newpage
+\begin{center}
+{\huge \underline{Soluciones}}
+\end{center}
+\begin{problems}
+\item Para desarrollar este problema nombraremos las baldosas $-k, -k+1, \ldots, -1, 0, 1, \ldots, k-1, k$ de un extremo a otro, de modo que Tom empieza en la baldosa $0$. Además, dado que nos enfrentamos a un problema de maximización diremos que un algoritmo online es $\rho(n)$-competitivo si se cumple que existe una constante $k$ para la cual se cumpla que en todo input de tamaño $n$
+\begin{align*}
+    \rho(n)\cdot ALG \ge OPT + k
+\end{align*}
+\begin{enumerate}[a)]
+    \item Si Jerry \demon, lanza el primer plato en $-k$, y los $n-1$ restantes en $k$, Tom irá a buscar el primer plato a $-k$, pero luego no irá por el resto de los platos, pues
+    \begin{itemize}
+        \item O bien, está esperando el plato de $-k$.
+        \item O bien, ya atrapo el plato de $-k$, pero no alcanza los que están en $k$.
+    \end{itemize}
+    Por lo tanto, mientras este algoritmo solo salva $1$ plato, el óptimo salva los $n-1$ de $k$. De modo que $OPT = n-1\cdot ALG$, y entonces, $> c\cdot ALG$ para cualquier constante $c$ eligiendo $n$ suficientemente grande.
+    \item Jerry podría lanzar el primer plato en $-1$ y los siguientes en $1, 2, \ldots, k-1, k, k-1, \ldots$. En este caso, Tom espera el plato de $-1$ y luego de obtenerlo va a buscar los platos en el mismo orden en que Jerry los lanzó, pero no alcanza ninguno de ellos, en cambio el óptimo hubiese dejado el plato en $-1$ y recogido los demás de la secuencia de lanzamientos. Se cumple entonces que $OPT = n-1\cdot ALG$, por lo que se procede del mismo modo que en la parte anterior para mostrar que este algoritmo no es $c$-competitivo.
+    \item La estrategia es la siguiente; si Tom está al medio, su objetivo será el plato que Jerry está lanzando en ese momento, lo va a buscar y luego vuelve al centro repitiendo así esta estrategia.\\
+    Notemos primero que Tom siempre recoge su objetivo (pues este está a distancia a lo más $k$). Además, en ir y volver, Tom se demora a lo más $2k$ segundos, y por lo tanto el óptimo offline a lo más pudo salvar $2k$ platos en ese transcurso. Con esto se cumple que en cada \textit{ida y vuelta} $2k\cdot ALG \ge 2k \ge OPT$ y como esto se cumple para todas las ``ida y vuelta''s realizadas, este algoritmo es $2k$-competitivo.
+\end{enumerate}
+\item 
+\begin{enumerate}[a)]
+    \item Sea $ALG$ un algoritmo que resuelve este problema. Como adversario creamos el siguiente input que depende del comportamiento de $ALG$.\\
+    Ofrecemos productos a precio $1\$$ a lo más $k$ veces, si $ALG$ compra alguno de estos productos, el siguiente que le ofrecemos es de precio $k\$$ (que ya no puede comprar) y dejamos de ofrecer productos. En cualquiera de los dos casos (si $ALG$ compra o no alguno de los productos) lo hará al menos $k$ veces peor que el óptimo (comprar uno de $1\$$ o nada cuando pudo haber comprado el de $k\$$ o los $k$ de $1\$$ respectivamente).\\ Por lo tanto, cualquier algoritmo tiene un input donde lo hace al menos $k$ veces peor que el óptimo, por lo que no se puede ser mejor que $k$-competitivo para el problema.
+    
+    \item Nuestro algoritmo hará lo siguiente:
+    \begin{itemize}
+        \item Si le ofrecen un producto de precio $\lceil k/2 \rceil$, vende todo lo que ha comprado y compra este producto.
+        \item Sino, solo compra el producto.
+        \item Si en algún momento lo comprado alcanza un monto $\ge \lceil k/2 \rceil$ deja de comprar.
+    \end{itemize}
+    Veamos ahora que si se alcanza el primer o el tercer punto se tiene que $ k\cdot ALG \ge k \ge OPT$, pues solo se tiene $k\$$. Si por otro lado, siempre nos mantenemos en el segundo punto, significa que compramos  todos los productos, por lo que $ALG = OPT$.
+\end{enumerate}
+\end{problems}
+\end{document}

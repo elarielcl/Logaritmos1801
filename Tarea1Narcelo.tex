@@ -1,0 +1,131 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts,setspace}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[spanish]{babel}
+\usepackage[lined,boxed,commentsnumbered]{algorithm2e}
+\SetKwInput{KwIn}{Input}
+\renewcommand{\algorithmcfname}{Algoritmo}
+\renewcommand{\figurename}{Figura}
+\renewcommand{\tablename}{Tabla}
+
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Tarea 1 - Diccionarios en Memoria Secundaria}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Pablo Barceló}
+\professor{Gonzalo Navarro}
+\assistant{Manuel Cáceres}
+\assistantt{Fabián Mosso}
+\assistantt{Jaime Salas}
+
+
+\begin{document}
+\captionsetup[table]{name=Tabla}
+\captionsetup[table]{name=Figura}
+
+\maketitle
+\vspace{-1ex}
+\section{Introducción}
+El objetivo de esta tarea es implementar y evaluar en la práctica diferentes formas de implementar diccionarios en memoria secundaria vistas en clases:
+\begin{itemize}
+    \item B-Trees
+    \item Hashing Lineal
+    \item Hashing Extendible
+\end{itemize}
+
+Se espera que se \textit{implementen} los algoritmos, \textit{realicen} los experimentos correspondientes y se entregue un \textit{informe} que indique claramente los siguientes puntos:
+\begin{enumerate}[1.]
+    \item Las \textit{hipótesis} escogidas antes de realizar los experimentos.
+    \item El \textit{diseño experimental}, incluyendo los detalles de la implementación de los algoritmos, la generación de las instancias y las medidas de rendimiento utilizadas.
+    \item La \textit{presentación de los resultados} en forma de una descripción textual, tablas y/o gráficos.
+    \item El \textit{análisis e interpretación} de los resultados.
+\end{enumerate}
+\section{Implementación}
+Se pide que implemente cuatro diccionarios en memoria secundaria:
+\begin{enumerate}[1.]
+    \item B-Trees
+    \item Hashing Extendible
+    \item Dos variantes de Hashing Lineal
+\end{enumerate}
+Las variantes de Hashing Lineal se diferencian en las políticas utilizadas para la expansión y contracción de la estructura: estas políticas deberán ser escogidas por usted. Explique claramente en su informe las políticas que escoja. \\
+Escoja el parámetro $B$ (el tamaño de la unidad mínima de I/O) para sus estructuras de acuerdo a las características de su máquina. Documente las carasterísticas de su máquina, el sistema operativo, lenguaje y compilador utilizados, RAM, y características del disco duro.
+
+\subsection*{Funciones de Hash}
+En esta tarea se trabajará con cadenas de ADN. De esta forma es necesario definir una función de hash adecuada para las estructuras de Hashing Extendible y Lineal. Utilice como hash una codificación binaria de las cadenas, usando dos bits para cada base nitrogenada ($G, C, A, T$). Así, el hash es la representación binaria de la cadena misma.
+
+\section{Experimentos y Datos}
+Trabaje con los siguientes conjuntos de datos:
+
+\subsection*{Datos aleatorios}
+Genere $2^{20}$ cadenas de bases nitrogenadas (es decir, compuestas por los caracteres $G, C, A, T$) de largo $15$ de forma aleatoria.
+\begin{itemize}
+    \item Inserte estas cadenas en la estructura, realizando las mediciones que se indican más adelante. Luego de insertar $2^i$ elementos en la estructura, para $i \in \{15, \ldots, 20\}$, realice lo siguiente:
+    \begin{itemize}
+        \item Obtenga $1000$ cadenas elegidas al azar de las ya insertadas. Utilice éstas para probar búsquedas exitosas en la estructura.
+        \item Obtenga $1000$ cadenas de ADN de largo $15$, generadas al azar. Utilice éstas para probar búsquedas infructuosas en la estructura.
+    \end{itemize}
+    \item Elimine todos los elementos de la estructura, en un orden aleatorio.
+\end{itemize}
+
+\subsection*{Mediciones}
+Obtenga las siguientes medidas de rendimiento:
+
+\subsubsection*{Ocupación de la estructura}
+Mida el espacio efectivamente ocupado por la información insertada en la estructura dividido por el espacio comprendido por los bloques de disco utilizados. Mida esta cantidad:
+\begin{itemize}
+    \item Luego de insertar $2^i$ elementos en la estructura, con $i\in \{15,\ldots,20\}$.
+    \item Al llegar a $2^i$ elementos en la estructura en el proceso de borrado, con $i\in \{15,\ldots,19\}$.
+\end{itemize}
+
+\subsubsection*{Operaciones de lectura/escritura en disco}
+Mida el número de operaciones de escritura y lectura en disco en los siguientes casos:
+\begin{itemize}
+    \item Luego de insertar $2^i$ elementos en la estructura, con $i\in \{15,\ldots,20\}$.
+    \item Al realizar las búsquedas de los $2^i$ elementos (para $i \in \{15,\ldots,20\}$) ya insertados (búsquedas exitosas).
+    \item Al realizar las búsquedas de los $2^i$ elementos (para $i\in\{15\ldots, 20\}$) generados al azar (búsquedas infructuosas).
+    \item De la misma forma, mida el número de operaciones de lectura y escritura a disco necesarias al llegar a $2^i$ elementos en la estructura, durante el proceso de borrado con $i\in\{15,\ldots,19\}$.
+    \item Mida además, el número necesario para vaciar completamente la estructura: así, podrá determinar el número de operaciones necesarias para vaciar una estructura con $2^i$ elementos, con $i\in\{15,\ldots, 20\}$.
+\end{itemize}
+Determine, además, y de acuerdo a las repeticiones que haga de sus experimentos, el error asociado a los promedios para las mediciones que realice, y utilícelo en sus gráficos.
+
+\section{Entrega de la Tarea}
+\begin{itemize}
+    \item La tarea puede realizarse en grupos de a lo más 2 personas.
+    \item Para la implementación solo puede utilizar C, C++ o Java. Para el informe se recomienda utilizar \LaTeX .
+    \item Siga buenas prácticas (\textit{good coding practices}) en sus implementaciones.
+    \item Escriba un informe claro y conciso. Las ponderaciones del informe y la implementación en su nota final son las mismas.
+    \item Tenga en cuenta las sugerencias realizadas en las primeras clases sobre la forma de realizar y presentar experimentos.
+    \item La entrega será a través de U-Cursos y deberá incluir el informe junto con el código fuente de la implementación (y todas las indicaciones necesarias para su ejecución).
+    \item Se permiten atrasos con un descuento de 1 punto por día.
+\end{itemize}
+\end{document}
+

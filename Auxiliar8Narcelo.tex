@@ -1,0 +1,131 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts,setspace}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+
+%Teoremas, Lemas, etc.
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lem}{Lema}
+\newtheorem{prop}{Proposici\'on}
+\newtheorem{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem{defi}{Definici\'on}
+\newtheorem{obs}{Observaci\'on}
+\newtheorem{ej}{Ejemplo}
+\newtheorem{ejer}{Ejercicio}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Auxiliar 8 - ``Hollow Heaps y Ordenando Strings"}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Gonzalo Navarro}
+\assistant{\textst{Manuel} Ariel Cáceres Reyes}
+
+
+\begin{document}
+\maketitle
+\begin{center}
+14 de Mayo del 2018
+\end{center}
+
+
+\vspace{-1ex}
+
+\cfoot{``The world is continuous but the mind is discrete''\\David Mumford}
+
+\begin{problems}
+\problem{\large\underline{\textbf{Hollow Heaps}}}\\
+Los \textit{hollow heaps} implementan las operaciones vistas para colas de prioridad, además de la operación \textit{decrease-key}, que cambia la clave de un elemento a un valor menor.\\
+Para realizarlo, guarda los elementos en un conjunto de árboles que cumplen la \textit{propiedad de heap} (la llave del padre es menor a la de todos sus hijos) y que pueden tener nodos que solo tienen claves, pero no elementos, los \textit{hollow nodes}.\\
+La operación básica para unir dos árboles con raíces $u$ y $v$ se denomina $link(u, v)$ y, suponiendo que $u$ tiene una clave menor a $v$, cuelga a $v$ como hijo de $u$ y aumenta el $rank$ de $u$ en $1$ (el $rank$ es un atributo de los nodos que se inicia en $0$ y cambia con el procedimiento antes descrito).\
+\begin{itemize}
+    \item Las operaciones de \textit{insertar} y \textit{meld} se realizan de manera análoga a los \textit{Heaps de Fibonacci}.
+    \item \textit{extraer\_minimo} saca el elemento del nodo que tiene el mínimo (al igual que en los \textit{Heaps de Fibonacci} este puntero se recomputa con las operaciones), luego elimina todas las raíces que son \textit{hollow nodes} y finalmente hace \textit{links} entre nodos de mismo $rank$, mientras sea posible.
+    \item \textit{decrase-key}, saca el elemento del nodo correspondiente (creando un \textit{hollow node}) y lo inserta con su nueva llave. Además, si el nodo en el que estaba tenía $rank$ $r$, se mueven sus $r-2$ hijos (con sus subárboles) de menor $rank$, al nuevo nodo insertado (dándole un $rank$ de $r-2$ si es no negativo).
+\end{itemize}
+Muestre que un conjunto de operaciones válidas sobre un \textit{hollow heap} inicialmente vacío alcanza $\mathcal{O}(1)$ amortizado para todas las operaciones, excepto \textit{extraer\_min} para la cual tiene un costo amortizado de $\mathcal{O}(\log{N})$
+\problem {\large\underline{\textbf{Ordenando Strings}}}\\
+Tenemos los \texttt{Strings} $w_{1}, w_{2},\ldots w_{n} \in \Sigma$, con $\sigma = |\Sigma| \in \mathcal{O}(n)$ y queremos ordenarlos alfabéticamente. Además, el largo total de los \texttt{Strings} es $N = \sum |w_{i}|$.\\ Diseñe algoritmos de tiempo $\mathcal{O}(N)$ en los casos:
+\begin{enumerate}[a)]
+    \item Todas las cadenas del mismo largo.
+    \item Cadenas de largo variable.
+\end{enumerate}
+\end{problems}
+
+\newpage
+\begin{center}
+{\huge \underline{Soluciones}}
+\end{center}
+\begin{problems}
+\problem{\large\underline{\textbf{Hollow Heaps}}}\\
+Veamos primero que todas las operaciones, excepto \textit{extraer\_minimo} tienen costo $\mathcal{O}(1)$ en el peor caso.\\
+
+Veamos que se cumple que los nodos con item de $rank$ $r$ tienen $r$ hijos con $ranks$ $0,1,\ldots, r-1$, por otro lado, los \textit{hollow nodes} de $rank$ $r$ tienen $2$ hijos de $ranks$ $r-1$ y $r-2$.\\
+
+Veamos ahora que un nodo de $rank$ $r$ tiene al menos $F_{r+3}-1$ descendientes (donde $F_{n}$ es el $n$-ésimo número de fibonacci). Esto es simple de ver por inducción en $r$ pues en los casos $r = 0 \lor 1$ se cumple y en el caso $r\ge 2$ el nodo tiene al menos $2$ hijos que cumplen la hipótesis inductiva, luego tienen al menos $1 + (F_{r+2}-1) + (F_{r+1}-1) \ge F_{r+3}-1 \ge F_{r+2} \ge \phi^r$. Y por lo tanto, el $rank$ de un nodo en un \textit{hollow heap} de $N$ nodos es a lo más $\log_{\phi}{N}$.\\
+
+Definimos ahora el potencial de un nodo $v$ como $0$ si es \textit{hollow node} o si es un nodo con item hijo de un nodo con item y $1$ en otro caso, además definimos el potencial de la estructura como la suma de los potenciales de sus nodos. Podemos comprobar que en las operaciones distintas a \textit{extraer\_minimo} los aumentos de potencial son constantes por lo que el costo amortizado de estas operaciones sigue siendo constante. Por otro lado, para \textit{extraer\_minimo}, la eliminación del elemento de la raíz produce un aumento de potencial de a lo más su $rank$ (todos sus hijos tenían un item) que es $\mathcal{O}(\log_{\phi}{n})$, luego, la destrucción de los \textit{hollow nodes} se las cobraremos a su correspondiente creación (inserción o decreace-key), finalmente, veamos que cada $link$ que se realice tiene costo amortizado $0$, pues genera un decremento de potencial de $1$. Así el costo amortizado de \textit{extraer\_minimo} es $\mathcal{O}(\log{n})$.
+\problem{\large\underline{\textbf{Ordenando Strings}}}\\
+\begin{enumerate}[a)]
+    \item Si adaptamos CountingSort para ordenar \texttt{Strings} de una letra su complejidad será $\mathcal{O}(n + \sigma)$, y por lo tanto hacer un RadixSort sobre estos \textit{Strings} tiene costo $\mathcal{O}\left(\frac{N}{n} (n + \sigma)\right) = \mathcal{O}(N)$.\\
+    
+    \item Si los \texttt{Strings} tienen diferente largo no podemos usar el RadixSort de la parte anterior pues este ordena desde el dígito menos significativo, a si es que por ejemplo $ba$ quedaría antes de $a$ al ordenar ascendentemente.
+    
+    Otra opción es usar \texttt{padding} en las cadenas de largo menor a la más larga, de modo que tengamos $n$ cadenas de largo $\max{|w_{i}|}$. Sin embargo, este procedimiento podría llegar a ser $\mathcal{O}(N^2)$ (si por ejemplo tenemos 1 cadena larga y las demás cortas). \crying\\
+    
+    La solución viene dada por procesar los \texttt{Strings} desde el dígito más significativo y hacer $\le \sigma$ llamados recursivos para ordenar por el siguiente dígito. Este algoritmo es llamado MSD-RadixSort y se presenta a continuación:
+    
+    \begin{algorithm}[H]
+        \SetAlgoLined
+        //$W$ es el arreglo de Strings y $d$ el dígito por el que se está ordenando\\
+        //Asumimos también que CountingSort además retorna el arreglo que contiene las posiciones iniciales de cada letra\\
+        \SetKwProg{Fn}{Funcion}{}{}
+        \Fn{sort (W, d)}{
+            \If{$|W| \le 1$}{
+                \Return
+            }
+            $i \gets 0$ \\
+            $count \gets$ CountingSort(W, d)\\
+            \While{$W[i+1][d] = -1$}{
+            $i \gets i + 1$
+            }
+            \For{$r \gets 1 \ldots \sigma$}{
+                sort(W[i+count[r]: count[r+1]-1], d+1)
+            }
+        }
+    \end{algorithm}
+    Por razones prácticas de implementación le agregaremos un $-1$ al final de las cadenas, lo que agrega solo $n$ al tamaño del input.\\
+    Finalmente considerando que el costo amortizado por letra para CountingSort es de $\mathcal{O}(1)$ y notando que en el \texttt{peor} caso MSD-RadixSort procesa todas las letras del input con CountingSort, el costo total es $\mathcal{O}(N)$.
+\end{enumerate}
+\end{problems}
+\end{document}

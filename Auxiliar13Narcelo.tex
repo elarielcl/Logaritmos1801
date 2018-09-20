@@ -1,0 +1,149 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts,setspace}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+
+%Teoremas, Lemas, etc.
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lem}{Lema}
+\newtheorem{prop}{Proposici\'on}
+\newtheorem{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem{defi}{Definici\'on}
+\newtheorem{obs}{Observaci\'on}
+\newtheorem{ej}{Ejemplo}
+\newtheorem{ejer}{Ejercicio}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Auxiliar 13 - ``Algoritmos Paralelos"}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Gonzalo Navarro}
+\assistant{\textst{Manuel} Ariel Cáceres Reyes}
+
+
+\begin{document}
+\maketitle
+\begin{center}
+23 de Agosto del 2018
+\end{center}
+\vspace{-1ex}
+
+%%ORDENAR PUNTOS EN EL PLANO CON DISTRIBUCION UNIFORME
+%%ORDENAR VALORES EN [0, n^k - 1]
+%%ORDENAR SEGUN DISTANCIA AL CENTRO, PUNTOS DEL CIRCULO UNITARIO
+%%vEM (?)
+%%RANK EN TIEMPO CTE Y ESPACIO o(n)
+%%EXPRESIONES REGULARES EN AUTOMATAS! (COMODIN)
+%%KNUTH MORRIS PRATT
+%%OPERACIONES EN SUFFIX TREES!
+
+\begin{problems}
+%Bienvenida
+\problem {\large\underline{\textbf{Copias}}}\\
+Se desea, dado un cierto valor $x$, generar $n$ copias de este.
+\begin{enumerate}[a)]
+    \item Diseñe un algoritmo CREW de tiempo $\mathcal{O}(1)$ y eficiencia $\Theta(1)$
+    \item Diseñe un algoritmo EREW de tiempo $\mathcal{O}(\log n)$ que use $n$ procesadores
+    \item Mejórelo para obtener eficiencia $\Theta(1)$
+\end{enumerate}
+
+\problem {\large\underline{\textbf{Particionar Paralelo}}}\\
+Diseñe una versión paralela del algoritmo de particionar de QuickSort. Analice el tiempo $T(n, p)$ y eficiencia $E(n, p)$ esperadas. Muestre que su algoritmo es EREW o conviértalo para que lo sea.
+
+\problem {\large\underline{\textbf{Select(A, 1)}}}\\
+Sea $A$ un arreglo de bits de largo $n$. Diseñe un algoritmo CRCW que tome tiempo $\mathcal{O}(1)$ utilizando $\mathcal{O}(n)$ procesadores para encontrar Select(A, 1), el primer elemento $k$ tal que $A[k] = 1$.
+\end{problems}
+\newpage
+\begin{problems}
+\problem {\large\underline{\textbf{Copias}}}\\
+\begin{enumerate}[a)]
+\item
+Los $n$ procesadores miran a $x$ y lo copian en $B[p]$ en $1$ paso paralelo.
+Con esto tenemos que:
+\begin{align*}
+    T(n,n) &= 1\\
+	T(n) &= n\\
+	E(n,n) &= \frac{n}{n\cdot 1} = \mathcal{O}(1)
+\end{align*}
+\item 
+Lo anterior es CREW, para hacerlo EREW duplicamos los $x$'s en cada paso usando el doble de procesadores que en el paso anterior, hasta $\frac{n}{2}$.\\
+\begin{algorithm}[H]
+
+\SetAlgoLined
+\For{$i \gets 0 \ldots (log(n) - 1)$}{
+    \If {$p \le 2^i$}{
+        $B[2^i+p] = B[p]$
+    }
+}
+\end{algorithm}
+Notemos ahora que son $\log{n}$ pasos y se ocupan $\frac{n}{2}$ procesadores, por lo que:
+\begin{align*}
+T(n,n/2) &= \log{n}\\
+E(n,n/2) &= \frac{n}{n/2\cdot \log{n}} = \mathcal{O}(1/\log{n})
+\end{align*}
+\item
+Primero veamos que $W(n)=n$ pues se siguen copiando la misma cantidad de elementos.\\
+Ahora, por lema de Brent tenemos que existe un algortimo EREW tal que:
+\begin{align*}
+T\left(n,\frac{n}{\log{n}}\right) &= \mathcal{O}(\log{n})\\
+E\left(n,\frac{n}{\log{n}}\right) &= \frac{n}{\frac{n}{\log{n}}\cdot \mathcal{O}(\log{n})} = \mathcal{O}(1)
+\end{align*}
+Para lograr esto podemos hacer $n/\log{n}$ copias de $x$ con $n/\log{n}$ procesadores con el algoritmo de b) en tiempo $\log{n}$. Finalmente ponemos a cada uno de los procesadores con cada una de las copias realizadas a hacer $\log{n}$ copias con el algoritmo secuencial.
+\end{enumerate}
+
+\problem {\large\underline{\textbf{Particionar Paralelo}}}\\
+La idea general para resolver este problema consiste en utilizar \textit{prefijo paralelo} para hacer un filtro de los mayores al pivote y otro de los menores al pivote.\\
+
+En el algoritmo tendremos un arreglo $B$,  una variable $x$, el pivote $p$ y un arreglo $aux$ de salida para la partición en la memoria compartida. Cada procesador se encarga de un elemento del arreglo. Lo primero que hacen los procesadores es mirar su elemento y poner $1$ en la correspondiente posición en $B$ si es menor al pivote $p$, $0$ si no. Luego de esto ponemos a los procesadores a hacer \textit{prefix sum} sobre $B$, al finalizar dejamos $x\gets B[n]$ y el pivote en la posición $x+1$. Finalmente, los procesadores miran a $B$ y si su valor es distinto al de la posición anterior (o si son el primer valor y $B$ tiene un $1$) entonces escribimos el número en la posición correspondiente de $aux$. Para poner a los mayores al pivote repetimos el proceso anterior considerando el offset $x$ para la parte final.\\
+
+Veamos que el tiempo paralelo es el tiempo de \textit{parallel prefix} $T(n,n) = \log{n}$. Sin embargo, la eficiencia nos queda $E(n,n) = \frac{n}{n\log{n}} = \frac{1}{\log{n}}$. Para arreglar esto haremos que un procesador se encargue de $\log{n}$ elementos, con esto los pasos distintos a \textit{parallel prefix} quedarán de $\mathcal{O}(\log{n})$ pero solo se necesitarán $\Theta(n/\log{n})$ procesadores, con lo que la eficiencia llega a $1$.
+
+\problem {\large\underline{\textbf{Select(A, 1)}}}\\
+Dividimos el bitmap en bloques de tamaño $\sqrt{n}$, creando un bitmap
+\begin{align*}
+    B[i] = \begin{cases} 
+      0 & si\ A[(i-1)\sqrt{n}, i\sqrt{n}] = 0s \\
+      1 & si\ \exists 1 \in A[(i-1)\sqrt{n}, i\sqrt{n}] 
+   \end{cases}
+\end{align*}
+\begin{itemize}
+    \item $B$ puede ser llenado en $1$ paso paralelo (los $n$ procesadores miran cada uno una casilla de $A$ y si ven un $1$ ponen un $1$ en la casilla correspondiente de $B$.
+    \item En otro paso paralelo podemos identificar el primer bloque que contiene un $1$, sea $i^*$ este bloque.
+    \item Finalmente, obtenemos el primer uno del bloque $i^*$, llamándole $j^*$ con lo que el resultado sería $(i^*-1)\sqrt{n}+j^*$.
+\end{itemize}
+Para hacer esto último aplicamos un algoritmo bárbaro, que tiene un procesador mirando cada par de elementos del bloque (como el bloque es de tamaño $\sqrt{n}$ existen $\mathcal{O}(\sqrt{n}^2) = \mathcal{O}(n)$ pares) y si ambos elementos del par tienen un $1$ escribe un $0$ en el elemento de más a la derecha, de este modo, al finalizar, el único que tendrá un $1$ en el bloque será $j^*$.
+\end{problems}
+\end{document}
+
+ 

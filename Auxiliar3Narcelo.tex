@@ -1,0 +1,148 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts,setspace}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+
+%Teoremas, Lemas, etc.
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lem}{Lema}
+\newtheorem{prop}{Proposici\'on}
+\newtheorem{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem{defi}{Definici\'on}
+\newtheorem{obs}{Observaci\'on}
+\newtheorem{ej}{Ejemplo}
+\newtheorem{ejer}{Ejercicio}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Auxiliar 3 - ``Algoritmos Avaros y Programación Dinámica"}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Pablo Barceló}
+\professor{Gonzalo Navarro}
+\assistant{\textst{Manuel} Ariel Cáceres Reyes}
+
+
+\begin{document}
+\maketitle
+\begin{center}
+2 de abril del 2018
+\end{center}
+
+
+\vspace{-1ex}
+
+\cfoot{``Nothing makes us more vulnerable than loneliness, except greed.''\\ Thomas Harris}
+
+\begin{problems}
+
+\problem {\large\underline{\textbf{Árbol binario de búsqueda óptimo}}}\\
+Un árbol binario de búsqueda $T$ que tiene como elementos los números $\{1,\ldots,n\}$ cada uno de los cuales tiene probabilidad de acceso $p_{1},\ldots,p_{n}$, es óptimo si minimiza el valor:
+\begin{align*}
+    \sum_{i=1}^{n}w_{i}(profundidad_{T}(i) + 1)
+\end{align*}
+Diseñe un algoritmo que encuentre el costo del árbol binario de búsqueda óptimo. ¿Cuál es su costo?
+
+
+\problem {\large\underline{\textbf{Interval Scheduling}}}\\
+El problema de \textit{Interval Scheduling} consiste de un conjunto de $n$ pedidos de intervalos de tiempo $[i_{i}, f_{i}], 1 \le i \le n$, para usar un determinado recurso exclusivo (ej. una cabaña de veraneo). Se desea satisfacer la mayor cantidad de pedidos posible, pero no se puede permitir que se traslapen, es decir, se busca un conjunto maximal de intervalos disjuntos. Considere la estrategia general de elegir intervalos según algún criterio definido después de eso sacar todos los intervalos que se intersecten con el escogido y repetir la estrategia hasta que ya no queden intervalos.
+
+\begin{enumerate}[a)]
+\item Muestre que la estrategia de tomar el intervalo más corto no es óptima.
+\item Muestre que la estrategia de tomar el intervalo con menos intervalos que lo intersectan tampoco es óptima.
+\item Muestre que la estrategia de tomar el intervalo que tiene menor tiempo final es óptima.
+\end{enumerate}
+
+\problem {\large\underline{\textbf{Weighted Interval Scheduling}}}\\
+Considere ahora que los intervalos de la pregunta anterior tienen pesos $w_{1}, w_{2}, \ldots, w_{n}$ y se desea maximizar el peso total de un subconjunto de intervalos que no se intersectan.
+\begin{enumerate}[a)]
+    \item Muestre que la estrategia de tomar el intervalo que tiene menor tiempo final ya no óptima.
+    \item Diseñe un algoritmo de Programación Dinámica para resolver el problema. ¿Cuál es su costo?
+\end{enumerate}
+\end{problems}
+\newpage
+
+\begin{problems}
+\problem {\large\underline{\textbf{Árbol binario de búsqueda óptimo}}}\\
+Definimos $c(i,j)$ como el costo del árbol binario de búsqueda óptimo entre los elementos $i$ y $j$ y lo que queremos obtener finalmente es $c(1,n)$.\\
+
+Identificamos luego que $c$ tiene subsestructura óptima (pues el árbol binario de búsqueda óptimo estará compuesto por una raíz y 2 subárboles binarios de búsqueda óptimos), dada por la siguiente ecuación:
+\begin{align*}
+    c(i,j) =  \begin{cases} 
+      w_{i} & i = j\\
+      \min_{i\le r\le j}\{c(i,r-1)+c(r+1,j) + \sum_{k=i}^j w_{k}\} & i < j
+   \end{cases}
+\end{align*}
+, donde el costo del árbol con solo un elemento es simplemente su probabilidad de acceso, y el costo del árbol entre los elementos $i$ y $j$ es el mínimo eligiendo $r$ como la raíz, calculando el costo de los subárboles restantes y sumando las probabilidades de acceso de todos los elementos (por la raíz y porque los demás elementos descienden un nivel).\\
+
+Finalmente podemos resolver este problema con ``memoization'' (tabla de caché) o construyendo las soluciones bottom-up (programación dinámica).\\
+El costo del algoritmo estará dado entonces por la multiplicar el número de subproblemas por el tiempo para resolver cada subproblema estando los más chicos resueltos ($\mathcal{O}(n)$, pues el mínimo se calcula entre $i$ y $j$ que pueden ir de 1 a $n$), es decir $\mathcal{O}(n^2) \cdot \mathcal{O}(n) = \mathcal{O}(n^3)$.
+
+
+\problem {\large\underline{\textbf{Interval Scheduling}}}\\
+\begin{enumerate}[a)]
+    \item En el siguiente input se encierra la solución encontrada por el algoritmo que claramente no es la óptima.
+    \begin{center}
+        \includegraphics[scale=0.5]{imagenes/R}
+    \end{center}
+    \item En el siguiente input se encierra la solución óptima, sin embargo el algoritmo obtiene una solución de tamaño 3.
+    \begin{center}
+        \includegraphics[scale=0.5]{imagenes/S}
+    \end{center}
+    \item Demostraremos que la estrategia de elegir el intervalo con menor tiempo final es óptima. Esto lo haremos por inducción en el tamaño de la solución óptima del problema, es decir, que si $L$ es una lista de intervalos cuya solución óptima es de tamaño $k^*$, mostraremos que la estrategia encuentra una solución de tamaño $k^*$.\\
+    
+    \textbf{Caso Base $k^* = 1$:} La estrategia siempre encuentra al menos un intervalo, por lo que en este caso alcanza la solución óptima.\\
+    
+    \textbf{Paso Inductivo $k^*-1 \Rightarrow k^*$:} Consideremos que la solución encontrada por la estrategia es $[i_1, f_1], [i_2, f_2],\ldots, [i_{k}, f_{k}]$. Y consideremos $L'$ como el conjunto de los intervalos en $L$ que no se intersectan con $[i_1, f_1]$.\\
+    
+    Veamos que existe una solución óptima para $L$ que contiene $[i_1, f_1]$ (si tenemos una solución óptima podemos intercambiar su primer intervalo por $[i_1, f_1]$ y seguir siendo una solución válida). Por lo tanto, la solución óptima para $L'$ es de tamaño $k^*-1$, por lo que correr la estrategia sobre $L'$ es óptimo por hipótesis inductiva. Finalmente, notando que correr la estrategia sobre $L'$ resulta en $[i_2, f_2], [i_3, f_3],\ldots, [i_{k}, f_{k}]$, significa que $k-1 = k^* -1$ , por lo que la estrategia para $L$ es óptima.
+\end{enumerate}
+
+\problem {\large\underline{\textbf{Weighted Interval Scheduling}}}\\
+\begin{enumerate}[a)]
+    \item En el siguiente input se encierra la solución óptima, sin embargo, el algoritmo escoge los dos intervalos de arriba.
+    \begin{center}
+        \includegraphics[scale=0.5]{imagenes/T}
+    \end{center}
+    \item Definamos $L_x$ como el conjunto de intervalos que empiezan después de (o justo en) $x$, entonces la solución óptima para $L$ puede ser escrita como:
+    \begin{align*}
+        opt(L) &= \max_{1\le i \le n} {w_{i} + opt(L_{f_{i}})}
+    \end{align*}
+    Que corresponde a escoger el primer intervalo y agregarle la solución óptima hacia adelante.\\
+    Con esto notamos que el problema tiene estructura recursiva subóptima, donde el número de subproblemas es $\mathcal{O}(n)$ (cada uno de los $L_{f_{i}}$) y el tiempo para resolver un subproblema es $\mathcal{O}(n)$, por lo que el algoritmo de programación dinámica correspondiente toma $\mathcal{O}(n^2)$.
+    \item Para mejorar lo anterior reduciremos el tiempo para resolver un subproblema a $\mathcal{O}(\log{n})$. Antes de aplicar programación dinámica ordenaremos los intervalos por tiempo de inicio en $\mathcal{O}(n\log{n})$. Lo que haremos entonces es decidir si el primero de estos intervalos esta o no en el conjunto óptimo ($2$ opciones en vez de las $n$ del caso anterior), en caso que esté seguimos con el siguiente, y en el otro caso encontramos su correspondiente $L_{f_{i}}$ con una búsqueda binaria sobre los intervalos. Finalmente, dado que aún hay $\mathcal{O}(n)$ subproblemas, pero ahora cada subproblema nos cuesta $\mathcal{O}(\log{n})$ el algoritmo es de tiempo $\mathcal{n\log{n}}$.
+    \item \textbf{Propuesto:} Suponga que tiene los intervalos ordenados tanto por tiempo final como por tiempo inicial y resuelva el problema en $\mathcal{O}(n)$.
+    \item \textbf{Propuesto:} Muestre que el problema es $\Omega(n\log{n})$.
+\end{enumerate}
+\end{problems}
+\end{document}

@@ -1,0 +1,135 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts,setspace}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+
+%Teoremas, Lemas, etc.
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lem}{Lema}
+\newtheorem{prop}{Proposici\'on}
+\newtheorem{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem{defi}{Definici\'on}
+\newtheorem{obs}{Observaci\'on}
+\newtheorem{ej}{Ejemplo}
+\newtheorem{ejer}{Ejercicio}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Auxiliar 6 - ``Análisis Amortizado y Consultas Tarea 1"}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Pablo Barceló}
+\professor{Gonzalo Navarro}
+\assistant{\textst{Manuel} Ariel Cáceres Reyes}
+
+
+\begin{document}
+\maketitle
+\begin{center}
+30 de abril del 2018
+\end{center}
+
+
+\vspace{-1ex}
+
+\cfoot{``Great ability develops and reveals itself increasingly with every new assignment.''\\ Baltasar Gracian}
+
+\begin{problems}
+
+\problem \underline{\textbf{MultiStack}}\\
+Un \textit{multistack} consiste en una serie (potencialmente infinita) de stacks $S_0, \ldots..., S_{t−1}$ donde el stack $j$ puede almacenar hasta $3^j$ elementos. Todas las operaciones de \textit{push} se realizan inicialmente sobre $S_0$.Cuando se desea \textit{pushear} un elemento en un stack lleno $S_j$ , se vacía este stack en el siguiente, $S_{j+1}$ (posiblemente repitiéndose la operación de forma recursiva).\\
+Considere que las operaciones de \textit{push} y \textit{pop} en los stacks individuales tiene costo $1$.
+
+\begin{enumerate}[a)]
+    \item En el peor caso, ¿cuánto cuesta una operación de \textit{push} en esta estructura?
+    \item Demuestre que el costo amortizado de una secuencia de $n$ operaciones de \textit{push} en un \textit{multistack} inicialmente vacío es de $\mathcal{O}(n \log{n})$. Utilice la siguiente función de potencial:
+    \begin{align*}
+        \phi &= 2\cdot \sum_{j=0}^{t-1} N_j \cdot (\log_3{n} − j)        
+    \end{align*}
+    donde $N_j$ es el número de elementos en el stack $j$.
+    \item Muestre que el potencial anterior no funciona para cualquier secuencia de \textit{pushes} y \textit{pops}.
+\end{enumerate}
+\end{problems}
+
+\newpage
+\begin{center}
+{\huge \underline{Soluciones}}
+\end{center}
+\begin{problems}
+\problem \underline{\textbf{MultiStack}}\\
+\begin{enumerate}[a)]
+    \item Supongamos hemos hecho $\sum_{j=0}^{k}3^{k}$ \textit{pushes} sobre el \textit{multistacks}. En este caso tendremos los stacks $S_{0}, \ldots, S_{k}$ llenos, por lo que tendremos que vaciarlos todos, a un costo de $n$, que más el costo del \text{push} entrante nos da $n+1$.
+    \item Para realizar esta pregunta separaremos el costo del \textit{push} del proceso de vaciado correspondiente.\\
+    Primero veamos que una operación de \textit{push} considerando un $S_{0}$ vacío tiene como coste real $1$, además el único $N_{j}$ que cambia luego de hacer esta operación es el $N_{0}$ que pasa de $0$ a $1$, por lo que el cambio de potencial es de $2\log_3{n}$.\\
+    Analicemos ahora el proceso de vaciado. Para esto supongamos que tenemos llenos los stacks $S_{0}, \ldots, S_{k}$, por lo tanto el coste real de la operación será $\sum_{j = 0}^{k} 3^{j} = \frac{3^{k+1}-1}{2}$, además de los $N_{j}$ sabemos lo siguiente:
+    \begin{itemize}
+        \item $(N_{0})_{antes} = 1$ y $(N_{0})_{despues} = 0$
+        \item $(N_{j})_{antes} = 3^j$ y $(N_{j})_{despues} = 3^{j-1}$, para $j \in \{1, \ldots, k\}$
+        \item $(N_{k+1})_{antes} = (N_{k+1})_{despues} - 3^k$
+        \item $(N_{j})_{antes} = (N_{j})_{despues}$, para $j \in \{k+2, \ldots, t-1\}$
+    \end{itemize}
+    Luego si separamos la suma del potencial por los tramos anteriores, la diferencia de potencial queda:
+    \begin{align*}
+        \Delta \phi &=  2\cdot \left( -\log_3{n} + \sum_{j=1}^{k} (3^{j-1}-3^j) \cdot (\log_3{n} − j) + 3^{k}\cdot (\log_3{n} − (k+1)) \right)\\
+        &=  2\cdot \left( -\log_3{n} - 2\sum_{j=1}^{k} 3^{j-1} \cdot (\log_3{n} − j) + 3^{k}\cdot (\log_3{n} − (k+1)) \right)\\
+        &=  2\cdot \left( -\log_3{n} - 2\sum_{j=0}^{k-1} 3^{j} \cdot (\log_3{n} − j - 1) + 3^{k}\cdot (\log_3{n} − (k+1)) \right)
+        \\
+        &=  2\cdot \left( -\log_3{n} + 3^k \cdot (\log_3{n}-1) - k3^k - 2(\log_3{n}-1)\sum_{j=0}^{k-1} 3^{j}
+        + 2\cdot \sum_{j=0}^{k-1} j3^{j}\right) \\
+        &=  2\cdot \left( -\log_3{n} + 3^k \cdot (\log_3{n}-1) - k3^k - (\log_3{n}-1)\cdot (3^k - 1)
+        + 2\cdot \sum_{j=0}^{k-1} j3^{j}\right)
+    \end{align*}
+    \begin{align*}
+        &=  2\cdot \left( -1 - k3^k + 2\cdot \sum_{j=0}^{k-1} j3^{j}\right)\\
+        &=  2\cdot \left( -1 - k3^k + 2\cdot \frac{1}{4}(2\cdot 3^{k}(k-1) - 3^{k} + 3)\right)\\
+        &=  -2 - 2k3^k + 2\cdot 3^{k}(k-1) - 3^{k} + 3\right)\\
+        &= 1 - 3^{k+1}
+    \end{align*}
+    que si le sumamos al coste real nos queda un coste amortizado menor a cero.
+    
+    \item Primero explicaremos que para hacer un \textit{pop} vemos si hay un elemento para \text{popear} (?) desde el stack $S_{0}$, si no es así \textit{rellenamos} $S_{0}$ con $S_{1}$, repitiendo el proceso recursivamente si es necesario. Dividimos nuevamente el proceso en \textit{pop} son $S_{0}$ lleno y el proceso de \textit{relleno} y consideramos el mismo potencial. El \textit{pop} tiene un coste amortizado $\le 1$.\\
+    Por otro lado, consideremos, para el proceso de \textit{relleno}, que los primeros $k$ stacks se encuentran vacíos, luego el \textit{relleno} de los stacks tiene un coste de $\sum_{j = 0}^{k} 3^{j} = \frac{3^{k+1}-1}{2}$, además de los $N_{j}$ sabemos lo siguiente:
+    \begin{itemize}
+        \item $(N_{0})_{antes} = 0$ y $(N_{j})_{despues} = 1$
+        \item $(N_{j})_{antes} = 0$ y $(N_{j})_{despues} =2\cdot3^{j-1}$, para $j \in \{1, \ldots, k\}$
+        \item $(N_{k+1})_{antes} = (N_{k+1})_{despues} + 3^k$
+        \item $(N_{j})_{antes} = (N_{j})_{despues}$, para $j \in \{k+2, \ldots, t-1\}$
+    \end{itemize}
+    Luego si separamos la suma del potencial por los tramos anteriores, la diferencia de potencial queda:
+    \begin{align*}
+        \Delta \phi &=  2\cdot \left( \log_3{n} + 2\sum_{j=1}^{k} 3^{j-1} \cdot (\log_3{n} − j) - 3^{k}\cdot (\log_3{n} − (k+1)) \right)
+    \end{align*}
+    Que es el mismo resultado obtenido anteriormente, pero negado, por lo que al sumarlo con el coste real no podremos acotarlo.
+\end{enumerate}
+\end{problems}
+\end{document}

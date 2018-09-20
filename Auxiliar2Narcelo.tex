@@ -1,0 +1,174 @@
+\documentclass[dcc,uchile]{fcfmcourse}
+\usepackage{teoria}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{amsfonts,setspace}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{color}
+\usepackage{csquotes}
+\usepackage{soul}
+\usepackage{emojis}
+\usepackage[linesnumbered,lined,boxed,commentsnumbered]{algorithm2e}
+\renewcommand{\algorithmcfname}{Algoritmo}
+
+%Teoremas, Lemas, etc.
+\theoremstyle{plain}
+\newtheorem{teo}{Teorema}
+\newtheorem{lem}{Lema}
+\newtheorem{prop}{Proposici\'on}
+\newtheorem{cor}{Corolario}
+\theoremstyle{definition}
+\newtheorem{defi}{Definici\'on}
+\newtheorem{obs}{Observaci\'on}
+\newtheorem{ej}{Ejemplo}
+\newtheorem{ejer}{Ejercicio}
+
+\definecolor{pblue}{rgb}{0.13,0.13,1}
+\definecolor{pgreen}{rgb}{0,0.5,0}
+\definecolor{porange}{rgb}{0.9,0.5,0}
+\definecolor{pgrey}{rgb}{0.46,0.45,0.48}
+
+\lstset{language=Java,
+  showspaces=false,
+  showtabs=false,
+  breaklines=true,
+  showstringspaces=false,
+  breakatwhitespace=true,
+  commentstyle=\color{porange},
+  keywordstyle=\color{pblue},
+  stringstyle=\color{pgreen},
+  basicstyle=\ttfamily,
+  moredelim=[il][\textcolor{pgrey}]{$ $},
+  moredelim=[is][\textcolor{pgrey}]{\%\%}{\%\%}
+}
+
+\newenvironment{codebox} {\small \ttfamily \obeylines \begingroup \setstretch{-2.4}} {\endgroup}
+
+% COmpletar titulo
+\title{Auxiliar 2 - ``Cotas inferiores: Teoría de la Información y Reducciones"}
+\course[CC4102]{Diseño y Análisis de Algoritmos}
+\professor{Pablo Barceló}
+\professor{Gonzalo Navarro}
+\assistant{\textst{Manuel} Ariel Cáceres Reyes}
+
+
+\begin{document}
+\maketitle
+\begin{center}
+26 de marzo del 2018
+\end{center}
+
+
+\vspace{-1ex}
+
+\cfoot{``Information is not knowledge.''\\ Albert Einstein}
+
+\begin{problems}
+\problem {\Large\underline{\textbf{MultiMezcla}}}\\
+Se desea ordenar un arreglo $A[1, \ldots, n]$, formado por la concatenación de r arreglos ordenados de largo $n_1, \ldots, n_r$. Queremos probar que el problema es  $\Omega \left( \sum_{i = 1}^r{n_i\log{\frac{n}{n_{i}}}} \right)$,  en términos de número de comparaciones en el peor caso.
+
+\begin{enumerate}[a)]
+    \item Usando árbol de decisión pruebe la cota inferior.
+    \item Muestre un algoritmo que realice $\mathcal{O}(n\log{r})$ comparaciones.\\ ¿Contradice este algoritmo la cota inferior?
+\end{enumerate}
+
+\problem {\Large\underline{\textbf{Tuercas y Tornillos}}}\\
+Nos dan una fila de $n$ tuercas y otra de los $n$ tornillos que les corresponden, pero en cualquier orden. Visualmente no podemos comparar dos tuercas o dos tornillos, pero si podemos probar una
+tuerca con un tornillo y decidir cuál es mayor que la otra, o si se corresponden.
+
+\begin{enumerate}[a)]
+    \item Demuestre que el problema de hacer corresponder a cada tuerca con su tornillo es $\Omega (n \log n)$ en comparaciones tuerca-tornillo incluso en promedio.
+    \item Muestre un algoritmo que realice $\mathcal{O}(n\log{n})$ comparaciones en promedio.
+\end{enumerate}
+
+
+\problem {\Large\underline{\textbf{Distinción de Elementos}}}\\
+ Utilice un argumento similar a una reducción para dar una cota inferior de
+$\Omega (n\log n$) (en el modelo de comparaciones) para el problema de determinar si $n$ enteros son diferentes.
+
+\problem{\Large\underline{\textbf{Multiplicación de Matrices}}}\\
+ Muestre que el problema de multiplicar dos matrices de $n \times n$ se reduce al problema de calcular el cuadrado de una matriz. Usando su reducción, pruebe que no existe algoritmo $O(n^2)$ para calcular el cuadrado de una matriz.
+
+\end{problems}
+
+\newpage
+\begin{problems}
+\problem {\Large\underline{\textbf{MultiMezcla}}}\\
+\begin{enumerate}[a)]
+    \item Notamos que el árbol de decisión correspondiente a este problema es el mismo árbol del problema de ordenar, la diferencia está sin embargo en el número de outputs distintos que existen, pues ahora tenemos la restricción que los elementos de un subarreglo deben quedar ordenados en el arreglo final. Por conteo, existen $\frac{n!}{n_{1}!\cdot \ldots \cdot n_{r}!}$ outputs distintos y por lo tanto la altura del árbol de decisión es :
+\begin{align*}
+    \log{\frac{n!}{n_{1}!\cdot \ldots \cdot n_{r}!}} &= \log{n!} - \sum_{i=1}^r \log{n_{i}!} \\
+    &\approx n\log{n}  - cn - \sum_{i=1}^r{\left(n_{i}\log{n_{i}} - cn_{i}\right)} \\
+    &= \sum_{i=1}^{r} n_{i}\log{n} - cn - \sum_{i=1}^r n_{i}\log{n_{i}} + cn \\
+    &= \sum_{i=1}^{r}n_{i}\left(\log{n} - \log{n_{i}}\right) \\
+    &= \sum_{i = 1}^r{n_i\log{\frac{n}{n_{i}}}}
+\end{align*}
+    Donde usamos la aproximación de Stirling ($\log{n!} \approx n\log{n} - cn$).
+    
+    \item Nuestro algoritmo mantiene una cola de prioridad de $r$ elementos implementada con un heap (entonces las operaciones de inserción y eliminación toman $\mathcal{O}(\log{r})$). Los elementos del heap además tienen un puntero que indica de cual subarreglo proviene este elemento. Así el algoritmo comienza insertando los primeros elementos de cada uno de los subarreglos, luego, repetidamente hasta que no queden más elementos en la cola es extrae el un elemento (poniéndolo en el arreglo final) y se inserta el siguiente elemento del mismo subarreglo de donde venía el elemento extraído.\\
+    Finalmente, como todos los elementos son insertados y removidos una vez, el algoritmo realiza $\mathcal{O}(n\log{r})$ comparaciones.\\
+    
+    Esto no contradice la cota inferior, pues :
+    \begin{align*}
+        \sum_{i = 1}^r{n_i\log{\frac{n}{n_{i}}}} &= n \left(\sum_{i = 1}^r{\frac{n_i}{n}\log{\frac{n}{n_{i}}}}\right) \\
+        & \le n\log{\sum_{i = 1}^r\frac{n_{i}}{n}\frac{n}{n_{i}}}\\
+        &= n\log{r}
+    \end{align*}
+    Donde usamos la desigualdad de Jensen (Si $\sum \lambda_i = 1$ y $f$ es cóncava, entonces $f\left(\sum_{i=1}^r \lambda_{i} x_{i}\right)\ge \sum_{i=1}^r \lambda_{i} f(x_{i})$).
+\end{enumerate}
+
+\problem {\Large\underline{\textbf{Tuercas y Tornillos}}}\\
+\begin{enumerate}[a)]
+    \item Podemos interpretar el input de este problema como dos arreglos (uno de tuercas y uno de tornillos), por lo que el número de posibles input es $(n!)^2$. Luego, si consideramos que cada uno de los input se presenta con igual probabilidad y que las comparaciones realizadas por el algoritmo codifican aquel input podemos usar el Teorema de Shannon para mostrar que el algoritmo no puede hacer menos de $\log{n!^2} = \mathcal{O}(n\log{n})$ comparaciones en promedio.
+    
+    \item Lo que hacemos es tomar un tornillo y particionar el arreglo de tuercas según ese tornillo. Con esto, tendremos las tuercas menores a ese tornillo a la izquierda, las mayores a la derecha y la tuerca que calza con el tornillo, con esta última tuerca particionamos los tornillos con lo que finalmente tendremos $2$ subproblemas (el de la izquierda y el de la derecha) que resolvemos recursivamente.\\
+        Para concluir, notamos que la división de problemas en subproblemas es idéntica a la de QuickSort con la diferencia que en nuestra división hacemos $2$ ``particionar'' en vez de $1$, lo que aumenta el numero de comparaciones al doble, pero no cambia la complejidad promedio de $\mathcal{O}(n\log{n})$ de QuickSort.
+    
+\end{enumerate}
+
+
+\problem {\Large\underline{\textbf{Distinción de Elementos}}}\\
+ 
+ Supongamos por contradicción que existe un algoritmo $A$ que resuelve ``Distinción de Elementos'' en $o(n\log{n})$.\\
+  Construiremos otro algoritmo que ordena en $o(n\log{n})$ en base a las comparaciones que realiza $A$, lo que será una contradicción dada la cota inferior conocida de ``ordenar''.\\
+  
+  Antes veamos que si etiquetamos los elementos del input de menor a mayor, $a_{1}, a_{2}, \ldots, a_{n}$, $A$ debe haber comparado $a_{i-1}$ con $a_{i} \forall i$ (si no, un adversario puede construir un input donde todos los elementos son distintos y otro igual excepto que $a_{i-1} = a_{i}$).\\
+  
+  Consideremos ahora el grafo dirigido de comparaciones (aquel donde los nodos son los elementos del input y hay un arco de $u$ a $v$ si es que ambos se compararon y $u$ resultó ser menor a $v$). Este grafo no tiene ciclos dirigidos (pues si tuviese uno el input sería inconsistente), por lo que podemos encontrar un orden topológico de los nodos del grafo que de hecho corresponde a $a_{1}, a_{2}, \ldots, a_{n}$, por la propiedad del párrafo anterior.\\
+  
+  Con esto nuestro algoritmo, ejecuta $A$ ($o(n\log{n})$), con las comparaciones realizadas construye el grafo de comparaciones ($o(n\log{n})$) y averigua el orden topológico del grafo ($o(n\log{n})$), con lo que ordena el input en $o(n\log{n})$, lo que es una contradicción.
+ 
+\problem{\Large\underline{\textbf{Multiplicación de Matrices}}}\\
+ Sean $A$ y $B$ las matrices de $n\times n$ que queremos multiplicar. \\
+ Creamos la matriz:
+ 
+ \begin{align*}
+     \begin{bmatrix}
+    A       & B \\
+    0      & 0
+\end{bmatrix}
+\end{align*}
+
+Que es una matriz de $2n^2\times 2n^2$ por lo que lo podemos hacer en $\mathcal{O}(n^2)$.\\
+Elevamos nuestra matriz al cuadrado:
+
+\begin{align*}
+\begin{bmatrix}
+    A       & B \\
+    0      & 0
+\end{bmatrix}
+\times\begin{bmatrix}
+    A       & B \\
+    0      & 0
+\end{bmatrix}
+= \begin{bmatrix}
+    A^2      & A\times B \\
+    0      & 0
+\end{bmatrix}
+\end{align*} 
+ y finalmente extraemos el resultado del cuarto superior derecho de este resultado en $\mathcal{O}(n^2)$.\\
+ 
+ Supongamos ahora por contradicción que existe un algoritmo para elevar al cuadrado una matriz de $\mathcal{O}(n^2)$, entonces podemos usar la reducción anterior para obtener un algoritmo de $\mathcal{O}(n^2)$ para multiplicación de matrices, lo que es una contradicción pues existe una cota inferior de $\omega(n^2)$ para ese problema.
+\end{problems}
+\end{document}
